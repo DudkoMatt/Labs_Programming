@@ -26,5 +26,10 @@ int main() {
 
     free(b);
 
+    // calloc(num, bytes_for_one) - создаёт и обнуляет значения
+    // malloc(bytes) - просто создаёт
+    // free(ptr) - освобождает
+    // realloc(ptr, new_amount_of_bytes)
+
     return 0;
 }
