@@ -17,7 +17,6 @@ int main(int argc, char * argv[]) {
     }
 
 
-    // Copied from net
     DIR *d;
     struct dirent *dir;
     d = opendir(".");
