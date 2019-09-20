@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
         int version = (int) header.info.version[0];
 
         // Debug
-        printf("Version: %d\n", version);
+//        printf("Version: %d\n", version);
 //        show(file, version, length_of_header);
 //
 //        printf("--------------------\n");
@@ -203,7 +203,7 @@ void printnchars(int n, char* ptr){
 unsigned int sizeOfMainHeader(Header header){
     unsigned int x = 0;
     for (int i = 0; i < 4; ++i) {
-        x = (x << 7) | (unsigned int)header.info.size[i];
+        x = (x << 7u) | (unsigned int)header.info.size[i];
         // То, что сдвиг на 7 - в спецификации
     }
     return x;
@@ -212,7 +212,7 @@ unsigned int sizeOfMainHeader(Header header){
 unsigned int sizeOfFrame(Frame frame){
     unsigned int x = 0;
     for (int i = 0; i < 4; ++i) {
-        x = (x << 8) | frame.info.size[i];
+        x = (x << 8u) | frame.info.size[i];
     }
     return x;
 }
@@ -220,7 +220,7 @@ unsigned int sizeOfFrame(Frame frame){
 unsigned int sizeOfFramev2(Frame_v2 frame){
     unsigned int x = 0;
     for (int i = 0; i < 3; ++i) {
-        x = (x << 8) | frame.info.size[i];
+        x = (x << 8u) | frame.info.size[i];
     }
     return x;
 }
@@ -296,7 +296,7 @@ void get(FILE* file, unsigned short version, unsigned int length_of_header, char
         while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
             unsigned int l = sizeOfFramev2(frame);
 
-            // ToDo: seek if not
+            // Seek if not
             if (strcmp(frame.info.id, prop) == 0){
                 char *data;
                 data = calloc(l, sizeof(char));
@@ -320,7 +320,7 @@ void get(FILE* file, unsigned short version, unsigned int length_of_header, char
 
             unsigned int l = sizeOfFrame(frame);
 
-            // ToDo: seek if not
+            // Seek if not
             if (strcmp(frame.info.id, prop) == 0){
                 char *data;
                 data = calloc(l, sizeof(char));
@@ -340,6 +340,7 @@ void get(FILE* file, unsigned short version, unsigned int length_of_header, char
     } else {
         printf("It's not a valid ID3v2 mp3 file");
     }
+    printf("Prop: %s not found", prop);
 }
 
 void set(FILE* file, unsigned short version, unsigned int length_of_header, char* prop, char* value){
@@ -381,7 +382,7 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
                 // Write new size
                 unsigned long len = strlen(value);
-                char write_size[] = {len & 0xff0000, len & 0xff00, len & 0xff};
+                unsigned char write_size[] = {(len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
                 bytes_written += 3;
                 fwrite(write_size, 1, 3, tmp_file);
 
@@ -414,7 +415,7 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
             // Write size
             unsigned long len = strlen(value);
-            char write_size[] = {len & 0xff0000, len & 0xff00, len & 0xff};
+            unsigned char write_size[] = {(len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
             bytes_written += 3;
             fwrite(write_size, 1, 3, tmp_file);
 
@@ -435,11 +436,11 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
         // Calculating new size
         fseek(tmp_file, 6, SEEK_SET);
 
-        char header_size[] = {
-                ((bytes_written << 3) & 0x7f000000),
-                ((bytes_written << 2) & 0x7f0000),
-                ((bytes_written << 1) & 0x7f00),
-                (bytes_written & 0x7f)
+        unsigned char header_size[] = {
+                (((bytes_written << 3u) & 0x7f000000u) >> 24u),
+                (((bytes_written << 2u) & 0x7f0000u) >> 16u),
+                (((bytes_written << 1u) & 0x7f00u) >> 8u),
+                (bytes_written & 0x7fu)
         };
 
         fwrite(header_size, 1, 4,tmp_file);
@@ -462,7 +463,7 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
                 // Write new size
                 unsigned long len = strlen(value);
-                char write_size[] = {len & 0xff000000, len & 0xff0000, len & 0xff00, len & 0xff};
+                unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
                 bytes_written += 4;
                 fwrite(write_size, 1, 4, tmp_file);
 
@@ -500,7 +501,7 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
             // Write size
             unsigned long len = strlen(value);
-            char write_size[] = {len & 0xff000000, len & 0xff0000, len & 0xff00, len & 0xff};
+            unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
             fwrite(write_size, 1, 4, tmp_file);
             bytes_written += 4;
 
@@ -527,11 +528,11 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
         // Calculating new size
 
-        char header_size[] = {
-                ((bytes_written << 3) & 0x7f000000),
-                ((bytes_written << 2) & 0x7f0000),
-                ((bytes_written << 1) & 0x7f00),
-                (bytes_written & 0x7f)
+        unsigned char header_size[] = {
+                (((bytes_written << 3u) & 0x7f000000u) >> 24u),
+                (((bytes_written << 2u) & 0x7f0000u) >> 16u),
+                (((bytes_written << 1u) & 0x7f00u) >> 8u),
+                (bytes_written & 0x7fu)
         };
 
         fwrite(header_size, 1, 4,tmp_file);
