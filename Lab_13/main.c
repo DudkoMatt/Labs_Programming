@@ -356,7 +356,6 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
     printf("Value: %s\n", value);
 
     // Writing header
-    // ToDo: resize header
     fseek(file, 0, SEEK_SET);
     Header header;
     fread(header.bytes, 1, 10, file);
@@ -366,7 +365,6 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
     unsigned short modified = 0;
 
-    // ToDO: rewrite
     if (version == 2){
         Frame_v2 frame;
         fread(frame.bytes, 1, 6, file);
@@ -425,7 +423,7 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
             fwrite(value, 1, len, tmp_file);
         }
 
-        // ToDO: Дописать остальную часть
+        // Дописываем остальную часть
         int c;
         while (!feof(file)){                        // while not end of file
             c = fgetc(file);                        // get a byte from the file
@@ -433,11 +431,9 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
         }
 
         // Completed writing file
-        // ToDo: Resize main header!
 
         // Calculating new size
         fseek(tmp_file, 6, SEEK_SET);
-        // ToDO: f - calculate size of header (8th bit is not used)
 
         char header_size[] = {
                 ((bytes_written << 3) & 0x7f000000),
@@ -518,7 +514,7 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
             fwrite(value, 1, len, tmp_file);
         }
 
-        // ToDo: Дописать остальную часть
+        // Дописываем остальную часть
 
         int c;
         while (!feof(file)){                        // while not end of file
@@ -528,7 +524,6 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
 
         // Completed writing header
-        // ToDo: Resize main header!
 
         // Calculating new size
 
