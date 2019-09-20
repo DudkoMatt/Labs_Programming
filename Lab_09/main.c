@@ -36,8 +36,8 @@ int main() {
 
     scanf("%lf %d %lf", &remaining, &n, &p);
     for (int j = 0; j < n; ++j) {
-        remaining += remaining * p / 100;
-        printf("%d: %lf\n", j + 1, remaining);
+        remaining += remaining * (p / 12) / 100;
+        printf("%d: %.2lf\n", j + 1, remaining);
     }
 
     return 0;
