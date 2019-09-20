@@ -36,7 +36,7 @@ int sqr(int x){
 union ADSL {
     unsigned short X;   // 2 байта
     struct {
-        unsigned short DSL: 1;  // Нумерация с младшего бита
+        unsigned short DSL: 1;  // Нумерация с младшего бита, так как система little endian
         unsigned short PPP: 1;
         unsigned short Link: 1;
     } Bits;  // Объявление переменной сразу
