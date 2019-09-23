@@ -48,6 +48,7 @@ char *file_path;
 
 int main(int argc, char *argv[]) {
     // Редактор метаинформации mp3-файла
+    // ToDO: Hold specific headers as COMM and others
 
     // Часть 1: разбор аргументов строки
 
