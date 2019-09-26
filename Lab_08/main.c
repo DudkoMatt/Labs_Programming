@@ -52,6 +52,7 @@ int main() {
             tmp = 0;
         }
     }
+    max = tmp > max ? tmp : max;
     printf("Длина наибольшего отрезка: %lu\n", max);
 
     // Задание 13:
