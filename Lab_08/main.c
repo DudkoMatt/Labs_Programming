@@ -35,15 +35,24 @@ int main() {
     // входящих во вторую строку.
     gets(str1);
     gets(str2);
-    unsigned long min = strlen(str1), max = 0;
-    unsigned long tmp;
-    for (unsigned long i = 0; i < strlen(str2); ++i) {
-        p = strrchr(str1, str2[i]);
-        tmp = p - str1;
-        min = tmp < min ? tmp : min;
-        max = tmp > max ? tmp : max;
+    unsigned long max = 0;
+    unsigned long tmp = 0;
+    short is_found = 0;
+    for (unsigned long i = 0; i < strlen(str1); ++i) {
+        is_found = 0;
+        for (unsigned long j = 0; j < strlen(str2); ++j) {
+            if (str1[i] == str2[j]) {
+                tmp += 1;
+                is_found = 1;
+                break;
+            }
+        }
+        if (!is_found) {
+            max = tmp > max ? tmp : max;
+            tmp = 0;
+        }
     }
-    printf("Длина отрезка: %lu\n", max - min + 1);
+    printf("Длина наибольшего отрезка: %lu\n", max);
 
     // Задание 13:
     // Выделить из одной строки лексемы (кусочки), разделенные любым из множества
