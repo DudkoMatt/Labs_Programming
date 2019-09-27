@@ -10,6 +10,7 @@ typedef union {
 
         // Флаги
         // NB: для разных машин может быть неодинаковым!
+        // Not used
         unsigned : 5;          // Младший бит
         unsigned flag_experimental: 1;
         unsigned flag_extended_header: 1;
@@ -34,11 +35,11 @@ unsigned int sizeOfMainHeader(Header);
 
 unsigned int sizeOfFrame(Frame);
 
-void show(FILE *, unsigned short, unsigned int);
+void show(FILE *, unsigned int);
 
-void get(FILE *, unsigned short, unsigned int, char *);
+void get(FILE *, unsigned int, char *);
 
-void set(FILE *, unsigned short, unsigned int, char *, char *);
+void set(FILE *, unsigned int, char *, char *);
 
 char *file_path;
 
@@ -59,8 +60,6 @@ int main(int argc, char *argv[]) {
 
     for (int i = 1; i < argc; ++i) {
         if (strlen(argv[i]) > 2 && strncmp(argv[i], "--", 2) == 0) {
-            // Debug
-            //  printf("%s\n", argv[i]);
             if (strlen(argv[i]) > 6 && strncmp(argv[i], "--get=", 6) == 0) {
                 _get = 1;
                 sscanf(argv[i], "--get=%s", get_prop);
@@ -70,12 +69,10 @@ int main(int argc, char *argv[]) {
                 _set = 1;
                 sscanf(argv[i], "--set=%s", set_prop);
             } else if (strlen(argv[i]) > 8 && strncmp(argv[i], "--value=", 8) == 0) {
-                // Mistake
                 _value = 1;
                 set_val = (char *) calloc(strlen(argv[i]) - 8, 1);
                 sscanf(argv[i], "--value=%[^\t\n]", set_val);
             } else if (strlen(argv[i]) > 11 && strncmp(argv[i], "--filepath=", 11) == 0) {
-                // Mistake
                 _path = 1;
                 file_path = (char *) calloc(strlen(argv[i]) - 11, 1);
                 sscanf(argv[i], "--filepath=%[^\t\n]", file_path);
@@ -145,7 +142,6 @@ int main(int argc, char *argv[]) {
     // Если первые 3 - ID3
     // То это то, что нам нужно
 
-    // Массив для первых 10 байт
     Header header;
     fread(header.bytes, 1, 10, file);
 
@@ -172,19 +168,12 @@ int main(int argc, char *argv[]) {
             return 0;
         }
 
-        // Debug
-//        printf("Version: %d\n", version);
-//        show(file, version, length_of_header);
-//
-//        printf("--------------------\n");
-//        get(file, version, length_of_header, "TPE2");
-
         if (_show) {
-            show(file, version, length_of_header);
+            show(file, length_of_header);
         } else if (_get) {
-            get(file, version, length_of_header, get_prop);
+            get(file, length_of_header, get_prop);
         } else if (_set) {
-            set(file, version, length_of_header, set_prop, set_val);
+            set(file, length_of_header, set_prop, set_val);
         }
 
     } else {
@@ -218,7 +207,7 @@ unsigned int sizeOfFrame(Frame frame) {
     return x;
 }
 
-void show(FILE *file, unsigned short version, unsigned int length_of_header) {
+void show(FILE *file, unsigned int length_of_header) {
     fseek(file, 10, SEEK_SET);
 
     // ID of frame is 4 chars in length
@@ -241,16 +230,162 @@ void show(FILE *file, unsigned short version, unsigned int length_of_header) {
         fread(data, 1, l, file);
 
         printf("%s: ", frame.info.id);
-        printnchars(l, data);
-        printf("\n");
-        free(data);
 
+        // Handling frames
+
+        if (strcmp(frame.info.id, "UFID") == 0) {
+            // Unique file identifier
+            long len_first_part = data - strchr(data, '\0');
+            printf("\n|\n---> Owner identifier: ");
+            printnchars(len_first_part, data);
+            printf("\n|\n---> Identifier: ");
+            printnchars(l - len_first_part - 1, data + len_first_part + 2);
+            printf("\n");
+        } else if (strncmp(frame.info.id, "T", 1) == 0) {
+            // Text info
+            if (strcmp(frame.info.id, "TXXX") != 0) {
+
+                if ((int) data[0] == 0) {
+                    printf("ISO-8859-1: ");
+                } else {
+                    printf("Unicode: ");
+                }
+                data++;
+                // Skip first byte encoding
+                printnchars(l - 1, data);
+                printf("\n");
+
+            } else {
+                short _unicode = 0;
+                // User defined text info
+                if ((int) data[0] == 0) {
+                    printf("ISO-8859-1: ");
+                } else {
+                    printf("Unicode: ");
+                    _unicode = 1;
+                }
+                data++;
+                // Skip first byte encoding
+                long len_first_part = data - strchr(data, '\0');
+                printf("\n|\n---> Description: ");
+                printnchars(len_first_part, data);
+                printf("\n|\n---> Value: ");
+                printnchars(l - len_first_part - 1 - _unicode, data + len_first_part + 1 + _unicode);
+                printf("\n");
+            }
+        } else if (strncmp(frame.info.id, "W", 1) == 0) {
+            if (strcmp(frame.info.id, "WXXX") != 0) {
+                printnchars(l, data);
+            } else {
+                short _unicode = 0;
+                if ((int) data[0] == 0) {
+                    printf("ISO-8859-1: ");
+                } else {
+                    printf("Unicode: ");
+                    _unicode = 1;
+                }
+                data++;
+                // Skip first byte encoding
+                long len_first_part = data - strchr(data + 1, '\0');
+                printf("\n|\n---> Description: ");
+                printnchars(len_first_part, data);
+                printf("\n|\n---> URL: ");
+                printnchars(l - len_first_part - 1 - _unicode, data + len_first_part + 1 + _unicode);
+                printf("\n");
+            }
+        } else if (strcmp(frame.info.id, "IPLS") == 0) {
+            short _unicode = 0;
+            if ((int) data[0] == 0) {
+                printf("ISO-8859-1: ");
+            } else {
+                printf("Unicode: ");
+                _unicode = 1;
+            }
+            data++;
+            // Skip first byte encoding
+            printnchars(l - 1, data);
+            printf("\n");
+        } else if (strcmp(frame.info.id, "MCDI") == 0) {
+            printf("CD TOC <binary data, skipped>\n");
+        } else if (strcmp(frame.info.id, "ETCO") == 0) {
+            printf("Event timing codes <skipped>\n");
+        } else if (strcmp(frame.info.id, "MLLT") == 0) {
+            printf("Location lookup table <skipped>\n");
+        } else if (strcmp(frame.info.id, "SYTC") == 0) {
+            printf("Synchronised tempo codes <binary data, skipped>\n");
+        } else if (strcmp(frame.info.id, "USLT") == 0) {
+            printf("Unsynchronised lyrics/text transcription <skipped>\n");
+        } else if (strcmp(frame.info.id, "SYLT") == 0) {
+            printf("Synchronised lyrics/text <skipped>\n");
+        } else if (strcmp(frame.info.id, "COMM") == 0) {
+            // _ToDO - done?
+            if ((int) data[0] == 0) {
+                printf("ISO-8859-1: ");
+                data++;
+                printf("\n|\n---> Language: %c%c%c", data[0], data[1], data[2]);
+                data += 3;
+                printf("\n|\n---> Content:\n");
+                printnchars(l - 4, data);
+            } else {
+                printf("Unicode, skipping\n");
+            }
+        } else if (strcmp(frame.info.id, "RVAD") == 0) {
+            printf("Relative volume adjustment <skipped>\n");
+        } else if (strcmp(frame.info.id, "EQUA") == 0) {
+            printf("Equalisation <skipped>\n");
+        } else if (strcmp(frame.info.id, "RVRB") == 0) {
+            // _ToDo?
+            printf("Reverb <skipped>\n");
+        } else if (strcmp(frame.info.id, "APIC") == 0) {
+            // Already skipped in the beginning
+        } else if (strcmp(frame.info.id, "GEOB") == 0) {
+            printf("General encapsulated object <skipped>\n");
+        } else if (strcmp(frame.info.id, "PCNT") == 0) {
+            // ToDO!
+            printf("Play count: <skipped, TODO!>");
+        } else if (strcmp(frame.info.id, "POPM") == 0) {
+            printf("Popularimeter <skipped>\n");
+        } else if (strcmp(frame.info.id, "RBUF") == 0) {
+            printf("Recommended buffer size <skipped>\n");
+        } else if (strcmp(frame.info.id, "AENC") == 0) {
+            printf("Audio encryption <skipped>\n");
+        } else if (strcmp(frame.info.id, "LINK") == 0) {
+            // Hm
+            printf("Linked information: ");
+            printnchars(l, data);
+        } else if (strcmp(frame.info.id, "POSS") == 0) {
+            printf("Position synchronisation <skipped>\n");
+        } else if (strcmp(frame.info.id, "USER") == 0) {
+            printf("Terms of use frame: ");
+            printnchars(l - 4, data + 4);
+            printf("\n");
+        } else if (strcmp(frame.info.id, "OWNE") == 0) {
+            printf("Ownership frame: ");
+            printnchars(l - 1, data + 1);
+            printf("\n");
+        } else if (strcmp(frame.info.id, "COMR") == 0) {
+            printf("Commercial frame <skipped>\n");
+        } else if (strcmp(frame.info.id, "ENCR") == 0) {
+            printf("Encryption method registration <skipped>\n");
+        } else if (strcmp(frame.info.id, "GRID") == 0) {
+            printf("Group ID registration <binary data, skipped>\n");
+        } else if (strcmp(frame.info.id, "PRIV") == 0) {
+            printf("Private frame <binary data, skipped>\n");
+        }
+        else {
+
+            printnchars(l, data);
+            printf("\n");
+
+        }
+
+        free(data);
         length_of_header -= l + 10;
         fread(frame.bytes, 1, 10, file);
     }
 }
 
-void get(FILE *file, unsigned short version, unsigned int length_of_header, char *prop) {
+void get(FILE *file, unsigned int length_of_header, char *prop) {
     fseek(file, 10, SEEK_SET);
     Frame frame;
     fread(frame.bytes, 1, 10, file);
@@ -278,7 +413,7 @@ void get(FILE *file, unsigned short version, unsigned int length_of_header, char
     printf("Prop: %s not found", prop);
 }
 
-void set(FILE *file, unsigned short version, unsigned int length_of_header, char *prop, char *value) {
+void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
     char *tmp_filename;
     tmp_filename = (char *) calloc(strlen(file_path) + 4, 1);
     strcat(tmp_filename, file_path);
