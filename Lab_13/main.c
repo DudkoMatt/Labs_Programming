@@ -20,14 +20,6 @@ typedef union {
 } Header;
 
 typedef union {
-    unsigned char bytes[6];
-    struct {
-        unsigned char id[3];
-        unsigned char size[3];
-    } info;
-} Frame_v2;
-
-typedef union {
     unsigned char bytes[10];
     struct {
         unsigned char id[4];
@@ -37,12 +29,16 @@ typedef union {
 } Frame;
 
 void printnchars(int, char *);
+
 unsigned int sizeOfMainHeader(Header);
+
 unsigned int sizeOfFrame(Frame);
-unsigned int sizeOfFramev2(Frame_v2);
-void show(FILE*, unsigned short, unsigned int);
-void get(FILE*, unsigned short, unsigned int, char*);
-void set(FILE*, unsigned short, unsigned int, char*, char*);
+
+void show(FILE *, unsigned short, unsigned int);
+
+void get(FILE *, unsigned short, unsigned int, char *);
+
+void set(FILE *, unsigned short, unsigned int, char *, char *);
 
 char *file_path;
 
@@ -81,7 +77,7 @@ int main(int argc, char *argv[]) {
             } else if (strlen(argv[i]) > 11 && strncmp(argv[i], "--filepath=", 11) == 0) {
                 // Mistake
                 _path = 1;
-                file_path = (char *)calloc(strlen(argv[i]) - 11, 1);
+                file_path = (char *) calloc(strlen(argv[i]) - 11, 1);
                 sscanf(argv[i], "--filepath=%[^\t\n]", file_path);
             } else {
                 printf("Invalid argument: %s\n", argv[i]);
@@ -95,7 +91,7 @@ int main(int argc, char *argv[]) {
 
     }
 
-    if (!_path){
+    if (!_path) {
         printf("Argument --filepath=path_to_file is required\n");
         printf("Program requires at minimum 2 arguments.\nRequired argument: --filepath=path_to_file\nOptions:\n");
         printf("1) --show\n");
@@ -138,9 +134,12 @@ int main(int argc, char *argv[]) {
 
     FILE *file;
 
-    // Debug
-    //  file = fopen("test.mp3", "rb+");
+    // Check if file opens
     file = fopen(file_path, "rb");
+    if (file == NULL) {
+        printf("Cannot open file\n");
+        return 0;
+    }
 
     // Читаем первые 10 байт файла
     // Если первые 3 - ID3
@@ -164,13 +163,14 @@ int main(int argc, char *argv[]) {
         length_of_header -= 10;
     }
 
-//    Debug
-//    int x = strcmp(s, "ID3");
-//    printf("Compare: %d; header: %s; str: %s", x, header.info.id3, s);
-
     if (strcmp(s, "ID3") == 0) {
         // Parsing version
         int version = (int) header.info.version[0];
+
+        if (version != 3) {
+            printf("This is ID3v2 file, but not ID3v2.3");
+            return 0;
+        }
 
         // Debug
 //        printf("Version: %d\n", version);
@@ -195,22 +195,22 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void printnchars(int n, char* ptr){
+void printnchars(int n, char *ptr) {
     for (int i = 0; i < n; ++i) {
         printf("%c", *(ptr + i));
     }
 }
 
-unsigned int sizeOfMainHeader(Header header){
+unsigned int sizeOfMainHeader(Header header) {
     unsigned int x = 0;
     for (int i = 0; i < 4; ++i) {
-        x = (x << 7u) | (unsigned int)header.info.size[i];
+        x = (x << 7u) | (unsigned int) header.info.size[i];
         // То, что сдвиг на 7 - в спецификации
     }
     return x;
 }
 
-unsigned int sizeOfFrame(Frame frame){
+unsigned int sizeOfFrame(Frame frame) {
     unsigned int x = 0;
     for (int i = 0; i < 4; ++i) {
         x = (x << 8u) | frame.info.size[i];
@@ -218,138 +218,72 @@ unsigned int sizeOfFrame(Frame frame){
     return x;
 }
 
-unsigned int sizeOfFramev2(Frame_v2 frame){
-    unsigned int x = 0;
-    for (int i = 0; i < 3; ++i) {
-        x = (x << 8u) | frame.info.size[i];
+void show(FILE *file, unsigned short version, unsigned int length_of_header) {
+    fseek(file, 10, SEEK_SET);
+
+    // ID of frame is 4 chars in length
+    Frame frame;
+    fread(frame.bytes, 1, 10, file);
+    while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
+        unsigned int l = sizeOfFrame(frame);
+
+        // Do not show image
+        if (strcmp(frame.info.id, "APIC") == 0) {
+            printf("%s: picture is skipped\n", frame.info.id);
+            fseek(file, l, SEEK_CUR);
+            length_of_header -= l + 10;
+            fread(frame.bytes, 1, 10, file);
+            continue;
+        }
+
+        char *data;
+        data = calloc(l, sizeof(char));
+        fread(data, 1, l, file);
+
+        printf("%s: ", frame.info.id);
+        printnchars(l, data);
+        printf("\n");
+        free(data);
+
+        length_of_header -= l + 10;
+        fread(frame.bytes, 1, 10, file);
     }
-    return x;
 }
 
-void show(FILE* file, unsigned short version, unsigned int length_of_header){
+void get(FILE *file, unsigned short version, unsigned int length_of_header, char *prop) {
     fseek(file, 10, SEEK_SET);
-    if (version == 2) {
-        // ID of frame is 3 chars in length
-        Frame_v2 frame;
-        fread(frame.bytes, 1, 6, file);
-        while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
-            unsigned int l = sizeOfFramev2(frame);
+    Frame frame;
+    fread(frame.bytes, 1, 10, file);
+    while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
 
-            // Do not show image
-            if (strcmp(frame.info.id, "APIC") == 0) {
-                printf("%s: picture is skipped\n", frame.info.id);
-                fseek(file, l, SEEK_CUR);
-                length_of_header -= l + 6;
-                fread(frame.bytes, 1, 6, file);
-                continue;
-            }
+        unsigned int l = sizeOfFrame(frame);
 
+        // Seek if not
+        if (strcmp(frame.info.id, prop) == 0) {
             char *data;
             data = calloc(l, sizeof(char));
             fread(data, 1, l, file);
-
             printf("%s: ", frame.info.id);
             printnchars(l, data);
             printf("\n");
             free(data);
-
-            length_of_header -= l + 6;
-            fread(frame.bytes, 1, 6, file);
+            return;
+        } else {
+            fseek(file, l, SEEK_CUR);
         }
-    } else if (version == 3 || version == 4) {
-        // ID of frame is 4 chars in length
-        Frame frame;
+
+        length_of_header -= l + 10;
         fread(frame.bytes, 1, 10, file);
-        while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
-            unsigned int l = sizeOfFrame(frame);
-
-            // Do not show image
-            if (strcmp(frame.info.id, "APIC") == 0) {
-                printf("%s: picture is skipped\n", frame.info.id);
-                fseek(file, l, SEEK_CUR);
-                length_of_header -= l + 10;
-                fread(frame.bytes, 1, 10, file);
-                continue;
-            }
-
-            char *data;
-            data = calloc(l, sizeof(char));
-            fread(data, 1, l, file);
-
-            printf("%s: ", frame.info.id);
-            printnchars(l, data);
-            printf("\n");
-            free(data);
-
-            length_of_header -= l + 10;
-            fread(frame.bytes, 1, 10, file);
-        }
-    } else {
-        printf("It's not a valid ID3v2 mp3 file");
-    }
-}
-
-void get(FILE* file, unsigned short version, unsigned int length_of_header, char* prop){
-    fseek(file, 10, SEEK_SET);
-    if (version == 2){
-        Frame_v2 frame;
-        fread(frame.bytes, 1, 6, file);
-        while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
-            unsigned int l = sizeOfFramev2(frame);
-
-            // Seek if not
-            if (strcmp(frame.info.id, prop) == 0){
-                char *data;
-                data = calloc(l, sizeof(char));
-                fread(data, 1, l, file);
-                printf("%s: ", frame.info.id);
-                printnchars(l, data);
-                printf("\n");
-                free(data);
-                return;
-            } else {
-                fseek(file, l, SEEK_CUR);
-            }
-
-            length_of_header -= l + 6;
-            fread(frame.bytes, 1, 6, file);
-        }
-    } else if (version == 3 || version == 4) {
-        Frame frame;
-        fread(frame.bytes, 1, 10, file);
-        while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
-
-            unsigned int l = sizeOfFrame(frame);
-
-            // Seek if not
-            if (strcmp(frame.info.id, prop) == 0){
-                char *data;
-                data = calloc(l, sizeof(char));
-                fread(data, 1, l, file);
-                printf("%s: ", frame.info.id);
-                printnchars(l, data);
-                printf("\n");
-                free(data);
-                return;
-            } else {
-                fseek(file, l, SEEK_CUR);
-            }
-
-            length_of_header -= l + 10;
-            fread(frame.bytes, 1, 10, file);
-        }
-    } else {
-        printf("It's not a valid ID3v2 mp3 file");
     }
     printf("Prop: %s not found", prop);
 }
 
-void set(FILE* file, unsigned short version, unsigned int length_of_header, char* prop, char* value){
-    char* tmp_filename;
-    tmp_filename = (char *)calloc(strlen(file_path) + 4, 1);
+void set(FILE *file, unsigned short version, unsigned int length_of_header, char *prop, char *value) {
+    char *tmp_filename;
+    tmp_filename = (char *) calloc(strlen(file_path) + 4, 1);
     strcat(tmp_filename, file_path);
     strcat(tmp_filename, ".tmp");
-    FILE* tmp_file = fopen(tmp_filename, "wb+");
+    FILE *tmp_file = fopen(tmp_filename, "wb+");
 
     // Debug
     printf("Temp filename: %s\n", tmp_filename);
@@ -367,144 +301,24 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
 
     unsigned short modified = 0;
 
-    if (version == 2){
-        Frame_v2 frame;
-        fread(frame.bytes, 1, 6, file);
+    Frame frame;
+    fread(frame.bytes, 1, 10, file);
+    while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
+        unsigned int l = sizeOfFrame(frame);
 
-        while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
-            unsigned int l = sizeOfFramev2(frame);
-
-            if (strcmp(frame.info.id, prop) == 0){
-                // Replace prop
-                modified = 1;
-                // Write header
-                bytes_written += 3;
-                fwrite(frame.info.id, 1, 3, tmp_file);
-
-                // Write new size
-                unsigned long len = strlen(value);
-                unsigned char write_size[] = {(len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
-                bytes_written += 3;
-                fwrite(write_size, 1, 3, tmp_file);
-
-                // Write value
-                bytes_written += len;
-                fwrite(value, 1, len, tmp_file);
-
-                fseek(file, l, SEEK_CUR);
-            } else {
-                // Just write
-                fwrite(frame.bytes, 1, 6, tmp_file);
-                bytes_written += 6;
-                char *data;
-                data = calloc(l, sizeof(char));
-                fread(data, 1, l, file);
-                fwrite(data, 1, l, tmp_file);
-                bytes_written += l;
-                free(data);
-            }
-
-            length_of_header -= l + 6;
-            fread(frame.bytes, 1, 6, file);
-        }
-
-        // Если такого значения не было, создадим его
-        if (!modified) {
-            // Write new prop
-            bytes_written += 3;
-            fwrite(prop, 1, 3, tmp_file);
-
-            // Write size
-            unsigned long len = strlen(value);
-            unsigned char write_size[] = {(len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
-            bytes_written += 3;
-            fwrite(write_size, 1, 3, tmp_file);
-
-            // Write value
-            bytes_written += len;
-            fwrite(value, 1, len, tmp_file);
-        }
-
-        // Дописываем остальную часть
-        int c;
-        while (!feof(file)){                        // while not end of file
-            c = fgetc(file);                        // get a byte from the file
-            fputc(c, tmp_file);
-        }
-
-        // Completed writing file
-
-        // Calculating new size
-        fseek(tmp_file, 6, SEEK_SET);
-
-        unsigned char header_size[] = {
-                (((bytes_written << 3u) & 0x7f000000u) >> 24u),
-                (((bytes_written << 2u) & 0x7f0000u) >> 16u),
-                (((bytes_written << 1u) & 0x7f00u) >> 8u),
-                (bytes_written & 0x7fu)
-        };
-
-        fwrite(header_size, 1, 4,tmp_file);
-
-
-    } else if (version == 3 || version == 4) {
-
-
-        Frame frame;
-        fread(frame.bytes, 1, 10, file);
-        while (length_of_header > 0 && (frame.info.id[0] != '\000')) {
-            unsigned int l = sizeOfFrame(frame);
-
-            if (strcmp(frame.info.id, prop) == 0){
-                // Replace prop
-                modified = 1;
-                // Write header
-                bytes_written += 4;
-                fwrite(frame.info.id, 1, 4, tmp_file);
-
-                // Write new size
-                unsigned long len = strlen(value);
-                unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
-                bytes_written += 4;
-                fwrite(write_size, 1, 4, tmp_file);
-
-                // Write flags
-                char flags[] = {0x0, 0x0};
-                bytes_written += 2;
-                fwrite(flags, 1, 2, tmp_file);
-
-                // Write value
-                bytes_written += len;
-                fwrite(value, 1, len, tmp_file);
-
-                fseek(file, l, SEEK_CUR);
-            } else {
-                // Just write
-                fwrite(frame.bytes, 1, 10, tmp_file);
-                bytes_written += 10;
-                char *data;
-                data = calloc(l, sizeof(char));
-                fread(data, 1, l, file);
-                fwrite(data, 1, l, tmp_file);
-                bytes_written += l;
-                free(data);
-            }
-
-            length_of_header -= l + 10;
-            fread(frame.bytes, 1, 10, file);
-        }
-
-        // Если такого значения не было, создадим его
-        if (!modified) {
-            // Write new prop
+        if (strcmp(frame.info.id, prop) == 0) {
+            // Replace prop
+            modified = 1;
+            // Write header
             bytes_written += 4;
-            fwrite(prop, 1, 4, tmp_file);
+            fwrite(frame.info.id, 1, 4, tmp_file);
 
-            // Write size
+            // Write new size
             unsigned long len = strlen(value);
-            unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u, len & 0xffu};
+            unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u,
+                                          len & 0xffu};
+            bytes_written += 4;
             fwrite(write_size, 1, 4, tmp_file);
-            bytes_written += 4;
 
             // Write flags
             char flags[] = {0x0, 0x0};
@@ -514,34 +328,67 @@ void set(FILE* file, unsigned short version, unsigned int length_of_header, char
             // Write value
             bytes_written += len;
             fwrite(value, 1, len, tmp_file);
+
+            fseek(file, l, SEEK_CUR);
+        } else {
+            // Just write
+            fwrite(frame.bytes, 1, 10, tmp_file);
+            bytes_written += 10;
+            char *data;
+            data = calloc(l, sizeof(char));
+            fread(data, 1, l, file);
+            fwrite(data, 1, l, tmp_file);
+            bytes_written += l;
+            free(data);
         }
 
-        // Дописываем остальную часть
-
-        int c;
-        while (!feof(file)){                        // while not end of file
-            c = fgetc(file);                        // get a byte from the file
-            fputc(c, tmp_file);
-        }
-
-
-        // Completed writing header
-
-        // Calculating new size
-
-        unsigned char header_size[] = {
-                (((bytes_written << 3u) & 0x7f000000u) >> 24u),
-                (((bytes_written << 2u) & 0x7f0000u) >> 16u),
-                (((bytes_written << 1u) & 0x7f00u) >> 8u),
-                (bytes_written & 0x7fu)
-        };
-
-        fwrite(header_size, 1, 4,tmp_file);
-
-
-    } else {
-        printf("It's not a valid ID3v2 mp3 file");
+        length_of_header -= l + 10;
+        fread(frame.bytes, 1, 10, file);
     }
+
+    // Если такого значения не было, создадим его
+    if (!modified) {
+        // Write new prop
+        bytes_written += 4;
+        fwrite(prop, 1, 4, tmp_file);
+
+        // Write size
+        unsigned long len = strlen(value);
+        unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u,
+                                      len & 0xffu};
+        fwrite(write_size, 1, 4, tmp_file);
+        bytes_written += 4;
+
+        // Write flags
+        char flags[] = {0x0, 0x0};
+        bytes_written += 2;
+        fwrite(flags, 1, 2, tmp_file);
+
+        // Write value
+        bytes_written += len;
+        fwrite(value, 1, len, tmp_file);
+    }
+
+    // Дописываем остальную часть
+
+    int c;
+    while (!feof(file)) {                       // while not end of file
+        c = fgetc(file);                        // get a byte from the file
+        fputc(c, tmp_file);
+    }
+
+
+    // Completed writing header and the rest of the file
+    // Calculating new size
+
+    unsigned char header_size[] = {
+            (((bytes_written << 3u) & 0x7f000000u) >> 24u),
+            (((bytes_written << 2u) & 0x7f0000u) >> 16u),
+            (((bytes_written << 1u) & 0x7f00u) >> 8u),
+            (bytes_written & 0x7fu)
+    };
+
+    fwrite(header_size, 1, 4, tmp_file);
 
 
     fclose(file);
