@@ -41,6 +41,8 @@ void get(FILE *, unsigned int, char *);
 
 void set(FILE *, unsigned int, char *, char *);
 
+unsigned long calcPlayCount(unsigned int, char*);
+
 char *file_path;
 
 int main(int argc, char *argv[]) {
@@ -324,8 +326,9 @@ void show(FILE *file, unsigned int length_of_header) {
                 data++;
                 printf("\n|\n---> Language: %c%c%c", data[0], data[1], data[2]);
                 data += 3;
-                printf("\n|\n---> Content:\n");
+                printf("\n|\n---> Content: ");
                 printnchars(l - 4, data);
+                printf("\n");
             } else {
                 printf("Unicode, skipping\n");
             }
@@ -342,7 +345,8 @@ void show(FILE *file, unsigned int length_of_header) {
             printf("General encapsulated object <skipped>\n");
         } else if (strcmp(frame.info.id, "PCNT") == 0) {
             // ToDO!
-            printf("Play count: <skipped, TODO!>");
+            // ToDO: check if it works
+            printf("Play count: %ld", calcPlayCount(l, data));
         } else if (strcmp(frame.info.id, "POPM") == 0) {
             printf("Popularimeter <skipped>\n");
         } else if (strcmp(frame.info.id, "RBUF") == 0) {
@@ -400,8 +404,154 @@ void get(FILE *file, unsigned int length_of_header, char *prop) {
             data = calloc(l, sizeof(char));
             fread(data, 1, l, file);
             printf("%s: ", frame.info.id);
-            printnchars(l, data);
-            printf("\n");
+
+
+            if (strcmp(prop, "UFID") == 0) {
+                // Unique file identifier
+                long len_first_part = data - strchr(data, '\0');
+                printf("\n|\n---> Owner identifier: ");
+                printnchars(len_first_part, data);
+                printf("\n|\n---> Identifier: ");
+                printnchars(l - len_first_part - 1, data + len_first_part + 2);
+                printf("\n");
+            } else if (strncmp(prop, "T", 1) == 0) {
+                // Text info
+                if (strcmp(prop, "TXXX") != 0) {
+
+                    if ((int) data[0] == 0) {
+                        printf("ISO-8859-1: ");
+                    } else {
+                        printf("Unicode: ");
+                    }
+                    data++;
+                    // Skip first byte encoding
+                    printnchars(l - 1, data);
+                    printf("\n");
+
+                } else {
+                    short _unicode = 0;
+                    // User defined text info
+                    if ((int) data[0] == 0) {
+                        printf("ISO-8859-1: ");
+                    } else {
+                        printf("Unicode: ");
+                        _unicode = 1;
+                    }
+                    data++;
+                    // Skip first byte encoding
+                    long len_first_part = data - strchr(data, '\0');
+                    printf("\n|\n---> Description: ");
+                    printnchars(len_first_part, data);
+                    printf("\n|\n---> Value: ");
+                    printnchars(l - len_first_part - 1 - _unicode, data + len_first_part + 1 + _unicode);
+                    printf("\n");
+                }
+            } else if (strncmp(prop, "W", 1) == 0) {
+                if (strcmp(prop, "WXXX") != 0) {
+                    printnchars(l, data);
+                } else {
+                    short _unicode = 0;
+                    if ((int) data[0] == 0) {
+                        printf("ISO-8859-1: ");
+                    } else {
+                        printf("Unicode: ");
+                        _unicode = 1;
+                    }
+                    data++;
+                    // Skip first byte encoding
+                    long len_first_part = data - strchr(data + 1, '\0');
+                    printf("\n|\n---> Description: ");
+                    printnchars(len_first_part, data);
+                    printf("\n|\n---> URL: ");
+                    printnchars(l - len_first_part - 1 - _unicode, data + len_first_part + 1 + _unicode);
+                    printf("\n");
+                }
+            } else if (strcmp(prop, "IPLS") == 0) {
+                short _unicode = 0;
+                if ((int) data[0] == 0) {
+                    printf("ISO-8859-1: ");
+                } else {
+                    printf("Unicode: ");
+                    _unicode = 1;
+                }
+                data++;
+                // Skip first byte encoding
+                printnchars(l - 1, data);
+                printf("\n");
+            } else if (strcmp(prop, "MCDI") == 0) {
+                printf("CD TOC <binary data, skipped>\n");
+            } else if (strcmp(prop, "ETCO") == 0) {
+                printf("Event timing codes <skipped>\n");
+            } else if (strcmp(prop, "MLLT") == 0) {
+                printf("Location lookup table <skipped>\n");
+            } else if (strcmp(prop, "SYTC") == 0) {
+                printf("Synchronised tempo codes <binary data, skipped>\n");
+            } else if (strcmp(prop, "USLT") == 0) {
+                printf("Unsynchronised lyrics/text transcription <skipped>\n");
+            } else if (strcmp(prop, "SYLT") == 0) {
+                printf("Synchronised lyrics/text <skipped>\n");
+            } else if (strcmp(prop, "COMM") == 0) {
+                // _ToDO - done?
+                if ((int) data[0] == 0) {
+                    printf("ISO-8859-1: ");
+                    data++;
+                    printf("\n|\n---> Language: %c%c%c", data[0], data[1], data[2]);
+                    data += 3;
+                    printf("\n|\n---> Content: ");
+                    printnchars(l - 4, data);
+                    printf("\n");
+                } else {
+                    printf("Unicode, skipping\n");
+                }
+            } else if (strcmp(prop, "RVAD") == 0) {
+                printf("Relative volume adjustment <skipped>\n");
+            } else if (strcmp(prop, "EQUA") == 0) {
+                printf("Equalisation <skipped>\n");
+            } else if (strcmp(prop, "RVRB") == 0) {
+                // _ToDo?
+                printf("Reverb <skipped>\n");
+            } else if (strcmp(prop, "APIC") == 0) {
+                // Already skipped in the beginning
+            } else if (strcmp(prop, "GEOB") == 0) {
+                printf("General encapsulated object <skipped>\n");
+            } else if (strcmp(prop, "PCNT") == 0) {
+                // ToDO: check if it works
+                printf("Play count: %ld", calcPlayCount(l, data));
+            } else if (strcmp(prop, "POPM") == 0) {
+                printf("Popularimeter <skipped>\n");
+            } else if (strcmp(prop, "RBUF") == 0) {
+                printf("Recommended buffer size <skipped>\n");
+            } else if (strcmp(prop, "AENC") == 0) {
+                printf("Audio encryption <skipped>\n");
+            } else if (strcmp(prop, "LINK") == 0) {
+                // Hm
+                printf("Linked information: ");
+                printnchars(l, data);
+            } else if (strcmp(prop, "POSS") == 0) {
+                printf("Position synchronisation <skipped>\n");
+            } else if (strcmp(prop, "USER") == 0) {
+                printf("Terms of use frame: ");
+                printnchars(l - 4, data + 4);
+                printf("\n");
+            } else if (strcmp(prop, "OWNE") == 0) {
+                printf("Ownership frame: ");
+                printnchars(l - 1, data + 1);
+                printf("\n");
+            } else if (strcmp(prop, "COMR") == 0) {
+                printf("Commercial frame <skipped>\n");
+            } else if (strcmp(prop, "ENCR") == 0) {
+                printf("Encryption method registration <skipped>\n");
+            } else if (strcmp(prop, "GRID") == 0) {
+                printf("Group ID registration <binary data, skipped>\n");
+            } else if (strcmp(prop, "PRIV") == 0) {
+                printf("Private frame <binary data, skipped>\n");
+            }
+            else {
+                printnchars(l, data);
+                printf("\n");
+            }
+            
+
             free(data);
             return;
         } else {
@@ -451,6 +601,43 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
 
             // Write new size
             unsigned long len = strlen(value);
+            unsigned long _len = len;
+            // Separate each header
+            // Specify each size
+
+            if (strncmp(prop, "T", 1) == 0) {
+                // Text info
+                if (strcmp(prop, "TXXX") != 0) {
+                    len += 2;
+                } else {
+                    // Do not do anything
+                    printf("Trying to wtite TXXX: do not do anything\n");
+                    return;
+                }
+            } else if (strncmp(prop, "W", 1) == 0) {
+                if (strcmp(prop, "WXXX") != 0) {
+                    len += 1;
+                } else {
+                    printf("Trying to write WXXX: do not do anything\n");
+                    return;
+                }
+            } else if (strcmp(prop, "IPLS") == 0) {
+                len += 2;
+            } else if (strcmp(prop, "COMM") == 0) {
+                len += 5 + 13;
+                // len += 5 - "\0ENG <...> \0"
+                // len += 13 - "USER COMMENT\0"
+            } else if (strcmp(prop, "PCNT") == 0) {
+                // _ToDO?
+                printf("PCNT - not implemented\n");
+                return;
+            } else {
+                printf("Trying to write %s - not implemented", prop);
+                return;
+            }
+
+
+
             unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u,
                                           len & 0xffu};
             bytes_written += 4;
@@ -461,9 +648,47 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
             bytes_written += 2;
             fwrite(flags, 1, 2, tmp_file);
 
+            // Restore previous value
+            len = _len;
+
+            // Write new values
+
+            if (strncmp(prop, "T", 1) == 0) {
+                fwrite("\0", 1, 1, tmp_file);
+                bytes_written += 1;
+                fwrite(value, 1, len, tmp_file);
+                bytes_written += len;
+                fwrite("\0", 1, 1, tmp_file);
+                bytes_written += 1;
+            } else if (strncmp(prop, "W", 1) == 0) {
+                fwrite(value, 1, len, tmp_file);
+                bytes_written += len;
+                fwrite("\0", 1, 1, tmp_file);
+                bytes_written += 1;
+            } else if (strcmp(prop, "IPLS") == 0) {
+                fwrite("\0", 1, 1, tmp_file);
+                bytes_written += 1;
+                fwrite(value, 1, len, tmp_file);
+                bytes_written += len;
+                fwrite("\0", 1, 1, tmp_file);
+                bytes_written += 1;
+            } else if (strcmp(prop, "COMM") == 0) {
+                fwrite("\0ENG", 1, 4, tmp_file);
+                fwrite("USER COMMENT\0", 1, 13, tmp_file);
+                bytes_written += 17;
+                fwrite(value, 1, len, tmp_file);
+                bytes_written += len;
+                fwrite("\0", 1, 1, tmp_file);
+                bytes_written += 1;
+            }
+
+
+            /*
+             * Already done above
             // Write value
             bytes_written += len;
             fwrite(value, 1, len, tmp_file);
+             */
 
             fseek(file, l, SEEK_CUR);
         } else {
@@ -484,6 +709,7 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
 
     // Если такого значения не было, создадим его
     if (!modified) {
+
         // Write new prop
         bytes_written += 4;
         fwrite(prop, 1, 4, tmp_file);
@@ -491,11 +717,36 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
         // Write size
         unsigned long len = strlen(value);
 
-        // ToDo: make separate function
-        // ToDO: include in upper while cycle
-        if (strcmp(prop, "COMM") == 0) {len += 5 + 13; bytes_written += 4;}
-        // len += 5 - "\0ENG <...> \0"
-        // len += 8 - "Comment\0"
+        if (strncmp(prop, "T", 1) == 0) {
+            // Text info
+            if (strcmp(prop, "TXXX") != 0) {
+                len += 2;
+            } else {
+                // Do not do anything
+                printf("Trying to wtite TXXX: do not do anything\n");
+                return;
+            }
+        } else if (strncmp(prop, "W", 1) == 0) {
+            if (strcmp(prop, "WXXX") != 0) {
+                len += 1;
+            } else {
+                printf("Trying to write WXXX: do not do anything\n");
+                return;
+            }
+        } else if (strcmp(prop, "IPLS") == 0) {
+            len += 2;
+        } else if (strcmp(prop, "COMM") == 0) {
+            len += 5 + 13;
+            // len += 5 - "\0ENG <...> \0"
+            // len += 13 - "USER COMMENT\0"
+        } else if (strcmp(prop, "PCNT") == 0) {
+            // _ToDO?
+            printf("PCNT - not implemented\n");
+            return;
+        } else {
+            printf("Trying to write %s - not implemented", prop);
+            return;
+        }
 
         unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u,
                                       len & 0xffu};
@@ -507,18 +758,42 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
         bytes_written += 2;
         fwrite(flags, 1, 2, tmp_file);
 
-        if (strcmp(prop, "COMM") == 0) {
-            fwrite("\0ENG", 1, 4, tmp_file);
-            fwrite("USER COMMENT\0", 1, 13, tmp_file);
-            fwrite(value, 1, len, tmp_file);
+        // Write values
+        if (strncmp(prop, "T", 1) == 0) {
             fwrite("\0", 1, 1, tmp_file);
             bytes_written += 1;
-        } else {
-
-            // Write value
-            bytes_written += len;
             fwrite(value, 1, len, tmp_file);
+            bytes_written += len;
+            fwrite("\0", 1, 1, tmp_file);
+            bytes_written += 1;
+        } else if (strncmp(prop, "W", 1) == 0) {
+            fwrite(value, 1, len, tmp_file);
+            bytes_written += len;
+            fwrite("\0", 1, 1, tmp_file);
+            bytes_written += 1;
+        } else if (strcmp(prop, "IPLS") == 0) {
+            fwrite("\0", 1, 1, tmp_file);
+            bytes_written += 1;
+            fwrite(value, 1, len, tmp_file);
+            bytes_written += len;
+            fwrite("\0", 1, 1, tmp_file);
+            bytes_written += 1;
+        } else if (strcmp(prop, "COMM") == 0) {
+            fwrite("\0ENG", 1, 4, tmp_file);
+            fwrite("USER COMMENT\0", 1, 13, tmp_file);
+            bytes_written += 17;
+            fwrite(value, 1, len, tmp_file);
+            bytes_written += len;
+            fwrite("\0", 1, 1, tmp_file);
+            bytes_written += 1;
         }
+
+        // Previous version
+        /*
+        // Write value
+        bytes_written += len;
+        fwrite(value, 1, len, tmp_file);
+        */
     }
 
 
@@ -544,7 +819,15 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
 
     fclose(file);
     fclose(tmp_file);
-    // ToDo: remove
-    // remove(file_path);
-//    rename(tmp_filename, file_path);
+    remove(file_path);
+    rename(tmp_filename, file_path);
+}
+
+unsigned long calcPlayCount(unsigned int l, char *data) {
+    // l - number of bytes
+    unsigned long x = 0;
+    for (int i = 0; i < l; ++i) {
+        x = (x << 8u) | data[i];
+    }
+    return x;
 }
