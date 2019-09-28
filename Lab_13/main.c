@@ -393,6 +393,7 @@ void get(FILE *file, unsigned int length_of_header, char *prop) {
 
         unsigned int l = sizeOfFrame(frame);
 
+        // Print if it is prop
         // Seek if not
         if (strcmp(frame.info.id, prop) == 0) {
             char *data;
@@ -421,12 +422,12 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
     FILE *tmp_file = fopen(tmp_filename, "wb+");
 
     // Debug
+    // ToDo: remove
     printf("Temp filename: %s\n", tmp_filename);
-
     printf("Prop: %s\n", prop);
     printf("Value: %s\n", value);
 
-    // Writing header
+    // Writing main header
     fseek(file, 0, SEEK_SET);
     Header header;
     fread(header.bytes, 1, 10, file);
@@ -489,6 +490,13 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
 
         // Write size
         unsigned long len = strlen(value);
+
+        // ToDo: make separate function
+        // ToDO: include in upper while cycle
+        if (strcmp(prop, "COMM") == 0) {len += 5 + 13; bytes_written += 4;}
+        // len += 5 - "\0ENG <...> \0"
+        // len += 8 - "Comment\0"
+
         unsigned char write_size[] = {(len & 0xff000000u) >> 24u, (len & 0xff0000u) >> 16u, (len & 0xff00u) >> 8u,
                                       len & 0xffu};
         fwrite(write_size, 1, 4, tmp_file);
@@ -499,13 +507,22 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
         bytes_written += 2;
         fwrite(flags, 1, 2, tmp_file);
 
-        // Write value
-        bytes_written += len;
-        fwrite(value, 1, len, tmp_file);
+        if (strcmp(prop, "COMM") == 0) {
+            fwrite("\0ENG", 1, 4, tmp_file);
+            fwrite("USER COMMENT\0", 1, 13, tmp_file);
+            fwrite(value, 1, len, tmp_file);
+            fwrite("\0", 1, 1, tmp_file);
+            bytes_written += 1;
+        } else {
+
+            // Write value
+            bytes_written += len;
+            fwrite(value, 1, len, tmp_file);
+        }
     }
 
-    // Дописываем остальную часть
 
+    // Дописываем остальную часть
     int c;
     while (!feof(file)) {                       // while not end of file
         c = fgetc(file);                        // get a byte from the file
@@ -525,9 +542,9 @@ void set(FILE *file, unsigned int length_of_header, char *prop, char *value) {
 
     fwrite(header_size, 1, 4, tmp_file);
 
-
     fclose(file);
     fclose(tmp_file);
-    remove(file_path);
-    rename(tmp_filename, file_path);
+    // ToDo: remove
+    // remove(file_path);
+//    rename(tmp_filename, file_path);
 }
