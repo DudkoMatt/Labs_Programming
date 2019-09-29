@@ -18,7 +18,7 @@ long get_width();
 void write_row(unsigned char *row_array, long width, long number, FILE*);
 void read_row(unsigned char*, long, long);
 void update_bmp_metadata(FILE*, long, long);
-int count_alive_near(unsigned long x, unsigned long y, unsigned long height, unsigned long width, unsigned char a[][width]);
+int count_alive_near(long x, long y, long height, long width, unsigned char a[][width]);
 char is_any_alive(unsigned long height, unsigned long width, unsigned char a[][width]);
 
 char *input_file_path;
@@ -26,6 +26,7 @@ FILE *input_file;
 char *output_directory;
 
 unsigned long MAX_ITERATIONS = 1000;
+// Note that when creating new image -> var "name" should be bigger, because it can overwrite another variables!
 
 long row_size = 0;
 
@@ -58,7 +59,7 @@ int main(int argc, char *argv[]) {
                 flag = 1;
             } else if (strlen(argv[i]) == 10 && strncmp(argv[i], "--max_iter", 10) == 0) {
                 _max_iter = 1;
-                max_iter = strtosigno(argv[i+1]);
+                sscanf(argv[i+1], "%d", &max_iter);
                 flag = 1;
             } else if (strlen(argv[i]) == 11 && strncmp(argv[i], "--dump_freq", 11) == 0) {
                 _dump_freq = 1;
@@ -150,15 +151,15 @@ int main(int argc, char *argv[]) {
                 int k = count_alive_near(i, j, height, width, pixel_array);
                 if (pixel_array[i][j] == 0){
                     if (k == 2 || k == 3) {
-                        new_pixel_array[i][j] = 1;
-                    } else {
                         new_pixel_array[i][j] = 0;
+                    } else {
+                        new_pixel_array[i][j] = 1;
                     }
                 } else {
                     if (k == 3){
-                        new_pixel_array[i][j] = 1;
-                    } else {
                         new_pixel_array[i][j] = 0;
+                    } else {
+                        new_pixel_array[i][j] = 1;
                     }
                 }
             }
@@ -190,10 +191,10 @@ int main(int argc, char *argv[]) {
         if (current_iteration + 1 % dump_freq == 0 || !_dump_freq) {
 
             // Create new file and write
-            char name[4] = {};
+            char name[10] = {};
             sprintf(name, "%lu", current_iteration);
             FILE *output_file = create_template(strcat(name, ".bmp"), height);
-            for (long i = height - 1; i >= 0; --i) {
+            for (long i = 0; i < height; ++i) {
                 write_row(pixel_array[i], width, i, output_file);
             }
             update_bmp_metadata(output_file, height, width);
@@ -276,13 +277,13 @@ void update_bmp_metadata(FILE *output_file, long height, long width){
     size = size - PIXEL_DATA;
 }
 
-int count_alive_near(unsigned long x, unsigned long y, unsigned long height, unsigned long width, unsigned char a[][width]){
+int count_alive_near(long x, long y, long height, long width, unsigned char a[][width]){
     // Поле зацикловано
-    unsigned long up = (x - 1) < 0 ? height - 1 : x - 1;
-    unsigned long down = (x + 1) >= height ? 0 : x + 1;
-    unsigned long left = (y - 1) < 0 ? width - 1 : y - 1;
-    unsigned long right = (y + 1) >= width ? 0 : y + 1;
-    return a[up][left] + a[up][y] + a[up][right] + a[x][left] + a[x][right] + a[down][left] + a[down][y] + a[down][right];
+    long up = (x - 1) < 0 ? height - 1: x - 1;
+    long down = (x + 1) >= height ? 0 : x + 1;
+    long left = (y - 1) < 0 ? width - 1 : y - 1;
+    long right = (y + 1) >= width ? 0 : y + 1;
+    return 8 - (a[up][left] + a[up][y] + a[up][right] + a[x][left] + a[x][right] + a[down][left] + a[down][y] + a[down][right]);
 }
 
 char is_any_alive(unsigned long height, unsigned long width, unsigned char a[][width]){
