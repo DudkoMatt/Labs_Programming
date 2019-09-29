@@ -19,6 +19,7 @@ void write_row(unsigned char *row_array, long width, long number, FILE*);
 void read_row(unsigned char*, long, long);
 void update_bmp_metadata(FILE*, long, long);
 int count_alive_near(unsigned long x, unsigned long y, unsigned long height, unsigned long width, unsigned char a[][width]);
+long count_all_alive(unsigned long height, unsigned long width, unsigned char a[][width]);
 
 char *input_file_path;
 FILE *input_file;
@@ -96,7 +97,9 @@ int main(int argc, char *argv[]) {
 
     row_size = ((width + 31) / 32) * 4;
 
-    unsigned char pixel_array[height][width];
+    unsigned char **previous_states[MAX_ITERATIONS];
+    unsigned long number_of_previous_states = 0;
+    unsigned char pixel_array[height][width];  // current
     unsigned char new_pixel_array[height][width];
 
     for (long i = 0; i < height; ++i) {
@@ -114,9 +117,74 @@ int main(int argc, char *argv[]) {
 
     while (current_iteration <= MAX_ITERATIONS && (current_iteration < max_iter || !_max_iter)) {
 
-        // Эмулирование
+        // Проверка на остановку
 
-        // ToDo
+        // Если нет живых клеток -> остановка
+        if (count_all_alive(height, width, pixel_array) == 0) {
+            break;
+        }
+
+        // Проверить, если конфигурация уже была до этого
+        char was_before = 1;
+        for (unsigned long q = 0; q < number_of_previous_states; ++q) {
+            was_before = 1;
+            for (long i = 0; i < height; ++i) {
+                if (!was_before) break;
+                for (long j = 0; j < width; ++j) {
+                    if (previous_states[q][i][j] != pixel_array[i][j]) {
+                        was_before = 0;
+                        break;
+                    }
+                }
+            }
+            if (was_before) {
+                break;
+            }
+        }
+
+        if (was_before) break;
+
+        // Эмулирование
+        for (long i = 0; i < height; ++i) {
+            for (long j = 0; j < width; ++j) {
+                int k = count_alive_near(i, j, height, width, pixel_array);
+                if (pixel_array[i][j] == 0){
+                    if (k == 2 || k == 3) {
+                        new_pixel_array[i][j] = 1;
+                    } else {
+                        new_pixel_array[i][j] = 0;
+                    }
+                } else {
+                    if (k == 3){
+                        new_pixel_array[i][j] = 1;
+                    } else {
+                        new_pixel_array[i][j] = 0;
+                    }
+                }
+            }
+        }
+
+
+        // Create new two dimensional array for storing
+        previous_states[number_of_previous_states] = (unsigned char**)malloc(height * sizeof(unsigned char*));
+        for (long i = 0; i < height; ++i) {
+            previous_states[number_of_previous_states][i] = (unsigned char*)malloc(width * sizeof(unsigned char));
+        }
+
+        // pixel_array -> previous states
+        for (long i = 0; i < height; ++i) {
+            for (long j = 0; j < width; ++j) {
+                previous_states[number_of_previous_states][i][j] = pixel_array[i][j];
+            }
+        }
+        number_of_previous_states++;
+
+        // Замена: new_pixel_array -> pixel_array
+        for (long i = 0; i < height; ++i) {
+            for (long j = 0; j < width; ++j) {
+                pixel_array[i][j] = new_pixel_array[i][j];
+            }
+        }
 
         // Вывод
         if (current_iteration + 1 % dump_freq == 0 || !_dump_freq) {
@@ -215,4 +283,16 @@ int count_alive_near(unsigned long x, unsigned long y, unsigned long height, uns
     unsigned long left = (y - 1) < 0 ? width - 1 : y - 1;
     unsigned long right = (y + 1) >= width ? 0 : y + 1;
     return a[up][left] + a[up][y] + a[up][right] + a[x][left] + a[x][right] + a[down][left] + a[down][y] + a[down][right];
+}
+
+long count_all_alive(unsigned long height, unsigned long width, unsigned char a[][width]){
+    long k = 0;
+    for (unsigned long i = 0; i < height; ++i) {
+        for (unsigned long j = 0; j < width; ++j) {
+            if (a[i][j] == 0) {
+                k++;
+            }
+        }
+    }
+    return k;
 }
