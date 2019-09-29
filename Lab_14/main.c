@@ -19,7 +19,7 @@ void write_row(unsigned char *row_array, long width, long number, FILE*);
 void read_row(unsigned char*, long, long);
 void update_bmp_metadata(FILE*, long, long);
 int count_alive_near(unsigned long x, unsigned long y, unsigned long height, unsigned long width, unsigned char a[][width]);
-long count_all_alive(unsigned long height, unsigned long width, unsigned char a[][width]);
+char is_any_alive(unsigned long height, unsigned long width, unsigned char a[][width]);
 
 char *input_file_path;
 FILE *input_file;
@@ -116,16 +116,16 @@ int main(int argc, char *argv[]) {
     unsigned long current_iteration = 0;
 
     while (current_iteration <= MAX_ITERATIONS && (current_iteration < max_iter || !_max_iter)) {
-
+        
         // Проверка на остановку
 
         // Если нет живых клеток -> остановка
-        if (count_all_alive(height, width, pixel_array) == 0) {
+        if (is_any_alive(height, width, pixel_array) == 0) {
             break;
         }
 
         // Проверить, если конфигурация уже была до этого
-        char was_before = 1;
+        char was_before = 0;
         for (unsigned long q = 0; q < number_of_previous_states; ++q) {
             was_before = 1;
             for (long i = 0; i < height; ++i) {
@@ -285,14 +285,13 @@ int count_alive_near(unsigned long x, unsigned long y, unsigned long height, uns
     return a[up][left] + a[up][y] + a[up][right] + a[x][left] + a[x][right] + a[down][left] + a[down][y] + a[down][right];
 }
 
-long count_all_alive(unsigned long height, unsigned long width, unsigned char a[][width]){
-    long k = 0;
+char is_any_alive(unsigned long height, unsigned long width, unsigned char a[][width]){
     for (unsigned long i = 0; i < height; ++i) {
         for (unsigned long j = 0; j < width; ++j) {
             if (a[i][j] == 0) {
-                k++;
+                return 1;
             }
         }
     }
-    return k;
+    return 0;
 }
