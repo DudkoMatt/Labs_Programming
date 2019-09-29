@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
             char name[4] = {};
             sprintf(name, "%lu", current_iteration);
             FILE *output_file = create_template(strcat(name, ".bmp"), height);
-            for (long i = 0; i < height; ++i) {
+            for (long i = height - 1; i >= 0; --i) {
                 write_row(pixel_array[i], width, i, output_file);
             }
             update_bmp_metadata(output_file, height, width);
