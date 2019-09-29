@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 enum OFFSETS {
     ALL_SIZE = 2,
@@ -11,19 +13,29 @@ enum OFFSETS {
 };
 
 FILE* create_template(char*);
+long get_height();
+long get_width();
+void write_row(unsigned char *row_array, long width, long number, FILE*);
+void read_row(unsigned char*, long, long);
+void update_size(FILE*);
 
 char *input_file_path;
+FILE *input_file;
 char *output_directory;
+
+unsigned long MAX_ITERATIONS = 1000;
+
+long row_size = 0;
 
 int main(int argc, char *argv[]) {
 
-    // Часть 1: разбор аргументов строки
+    // Часть 1: Разбор аргументов строки
 
-    unsigned int _input = 0;
-    unsigned int _output = 0;
-    unsigned int _max_iter = 0;
+    unsigned char _input = 0;
+    unsigned char _output = 0;
+    unsigned char _max_iter = 0;
     int max_iter = -1;
-    unsigned int _dump_freq = 0;
+    unsigned char _dump_freq = 0;
     int dump_freq = 1;
 
     unsigned char flag = 0;
@@ -63,8 +75,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (!_input || !_output) {
-        printf("Argument --input path_to_file is required\n");
-        printf("Program requires at minimum 2 arguments.\nRequired arguments:\n1) --input path_to_file\n2) --output dir_name\n\nOptions:\n");
+        printf("Arguments --input path_to_file and --output dir_name are required\n");
+        printf("Options:\n");
         printf("1) --max_iter N\n");
         printf("2) --dump_freq N\n");
         printf("Note: pass 'long' values with double quotes. Example: --value \"some long value\"");
@@ -73,14 +85,60 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    // Часть 2: Проверка существования папки и открытие входного файла
+    mkdir(output_directory, 0777);
+    input_file = fopen(input_file_path, "rb");
 
-    // Часть 2: чтение входного файла
+    // Часть 3: чтение входного файла
+    long height = get_height();
+    long width = get_width();
 
-    // Часть 3: эмулирование игры и вывод
+    row_size = ((width + 31) / 32) * 4;
+
+    unsigned char pixel_array[height][width];
+    unsigned char new_pixel_array[height][width];
+
+    for (long i = 0; i < height; ++i) {
+        read_row(pixel_array[i], width, i);
+    }
+
+    fclose(input_file);
+
+    // Часть 4: эмулирование игры и вывод
+
+    // Смена директории
+    chdir(output_directory);
+
+    unsigned long current_iteration = 0;
+
+    while (current_iteration <= MAX_ITERATIONS && (current_iteration < max_iter || !_max_iter)) {
+
+        // Эмулирование
+
+        // ToDo
+
+        // Вывод
+        if (current_iteration + 1 % dump_freq == 0 || !_dump_freq) {
+
+            // Create new file and write
+            char name[4] = {};
+            sprintf(name, "%lu", current_iteration);
+            FILE *output_file = create_template(strcat(name, ".bmp"));
+            for (long i = 0; i < height; ++i) {
+                write_row(pixel_array[i], width, i, output_file);
+            }
+            update_size(output_file);
+            fclose(output_file);
+        }
+    }
 
     // Test
     // FILE *file = create_template("test.bmp");
     // fclose(file);
+    // printf("Height: %ld\nWidth: %ld\n", height, width);
+
+    // Возврат в исходную директорию
+    chdir("..");
     return 0;
 }
 
@@ -92,5 +150,66 @@ FILE* create_template(char *name){
                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00};
     fwrite(template, 1, 62, file);
+    for (long i = 0; i < row_size * get_height(); ++i) {
+        fwrite("\0", 1, 1, file);
+    }
     return file;
+}
+
+long get_height(){
+    long x = 0;
+    fseek(input_file, HEIGHT, SEEK_SET);
+    fread(&x, 4, 1, input_file);
+    return x;
+}
+
+long get_width(){
+    long x = 0;
+    fseek(input_file, WIDTH, SEEK_SET);
+    fread(&x, 4, 1, input_file);
+    return x;
+}
+
+void read_row(unsigned char *row_array, long width, long row_number) {
+    unsigned char *data = calloc(1, row_size);
+    fseek(input_file, PIXEL_DATA + row_number * row_size, SEEK_SET);
+    fread(data, 1, row_size, input_file);
+
+    // Debug
+//    for (long i = 0; i < row_size; ++i) {
+//        printf("%02X ", data[i]);
+//    }
+//    printf("\n");
+
+    for (unsigned long i = 0; i < width; ++i) {
+        *(row_array + i) = (data[i / 8] & (0x1u << (7u - i % 8))) >> (7u - i % 8);
+    }
+    free(data);
+}
+
+void write_row(unsigned char *row_array, long width, long row_number, FILE *output_file){
+    unsigned char *data = calloc(1, row_size);
+    for (unsigned long i = 0; i < width; ++i) {
+        data[i / 8] = data[i / 8] | ( *(row_array + i) << (7u - i % 8));
+    }
+    fseek(output_file, PIXEL_DATA + row_number * row_size, SEEK_SET);
+    fwrite(data, 1, row_size, output_file);
+}
+
+void update_size(FILE *output_file){
+    unsigned long height = get_height();
+    unsigned long width = get_width();
+
+    fseek(output_file, ALL_SIZE, SEEK_SET);
+    unsigned long size = 14 + 40 + 8 + row_size * height;
+    fwrite(&size, 4, 1, output_file);
+
+    fseek(output_file, WIDTH, SEEK_SET);
+    fwrite(&width, 4, 1, output_file);
+
+    fseek(output_file, HEIGHT, SEEK_SET);
+    fwrite(&height, 4, 1, output_file);
+
+    fseek(output_file, IMG_SIZE, SEEK_SET);
+    size = size - PIXEL_DATA;
 }
