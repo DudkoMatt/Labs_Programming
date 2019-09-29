@@ -12,12 +12,13 @@ enum OFFSETS {
     PIXEL_DATA = 62
 };
 
-FILE* create_template(char*);
+FILE* create_template(char*, long);
 long get_height();
 long get_width();
 void write_row(unsigned char *row_array, long width, long number, FILE*);
 void read_row(unsigned char*, long, long);
-void update_size(FILE*);
+void update_bmp_metadata(FILE*, long, long);
+int count_alive_near(unsigned long x, unsigned long y, unsigned long height, unsigned long width, unsigned char a[][width]);
 
 char *input_file_path;
 FILE *input_file;
@@ -123,26 +124,22 @@ int main(int argc, char *argv[]) {
             // Create new file and write
             char name[4] = {};
             sprintf(name, "%lu", current_iteration);
-            FILE *output_file = create_template(strcat(name, ".bmp"));
+            FILE *output_file = create_template(strcat(name, ".bmp"), height);
             for (long i = 0; i < height; ++i) {
                 write_row(pixel_array[i], width, i, output_file);
             }
-            update_size(output_file);
+            update_bmp_metadata(output_file, height, width);
             fclose(output_file);
         }
+        current_iteration++;
     }
-
-    // Test
-    // FILE *file = create_template("test.bmp");
-    // fclose(file);
-    // printf("Height: %ld\nWidth: %ld\n", height, width);
 
     // Возврат в исходную директорию
     chdir("..");
     return 0;
 }
 
-FILE* create_template(char *name){
+FILE* create_template(char *name, long height){
     FILE* file = fopen(name, "wb");
     unsigned char template[] = {0x42, 0x4D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00, 0x00,
                                 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
@@ -150,7 +147,7 @@ FILE* create_template(char *name){
                                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00};
     fwrite(template, 1, 62, file);
-    for (long i = 0; i < row_size * get_height(); ++i) {
+    for (long i = 0; i < row_size * height; ++i) {
         fwrite("\0", 1, 1, file);
     }
     return file;
@@ -196,10 +193,7 @@ void write_row(unsigned char *row_array, long width, long row_number, FILE *outp
     fwrite(data, 1, row_size, output_file);
 }
 
-void update_size(FILE *output_file){
-    unsigned long height = get_height();
-    unsigned long width = get_width();
-
+void update_bmp_metadata(FILE *output_file, long height, long width){
     fseek(output_file, ALL_SIZE, SEEK_SET);
     unsigned long size = 14 + 40 + 8 + row_size * height;
     fwrite(&size, 4, 1, output_file);
@@ -212,4 +206,13 @@ void update_size(FILE *output_file){
 
     fseek(output_file, IMG_SIZE, SEEK_SET);
     size = size - PIXEL_DATA;
+}
+
+int count_alive_near(unsigned long x, unsigned long y, unsigned long height, unsigned long width, unsigned char a[][width]){
+    // Поле зацикловано
+    unsigned long up = (x - 1) < 0 ? height - 1 : x - 1;
+    unsigned long down = (x + 1) >= height ? 0 : x + 1;
+    unsigned long left = (y - 1) < 0 ? width - 1 : y - 1;
+    unsigned long right = (y + 1) >= width ? 0 : y + 1;
+    return a[up][left] + a[up][y] + a[up][right] + a[x][left] + a[x][right] + a[down][left] + a[down][y] + a[down][right];
 }
