@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 
 enum OFFSETS {
     ALL_SIZE = 2,
@@ -89,12 +90,35 @@ int main(int argc, char *argv[]) {
     }
 
     // Часть 2: Проверка существования папки и открытие входного файла
+    errno = 0;
     mkdir(output_directory, 0777);
+
+    if (errno != EEXIST && errno != 0) {
+        printf("Error when creating directory\n");
+        return 0;
+    }
+
+    if (errno == EEXIST) {
+        printf("Directory already exists, erasing\n");
+        rmdir(output_directory);
+        mkdir(output_directory, 0777);
+    }
+
     input_file = fopen(input_file_path, "rb");
+
+    if (input_file == NULL) {
+        printf("Error when opening file\n");
+        return 0;
+    }
 
     // Часть 3: чтение входного файла
     long height = get_height();
     long width = get_width();
+
+    if (height <= 0 || width <= 0){
+        printf("Error when reading file\n");
+        return 0;
+    }
 
     row_size = ((width + 31) / 32) * 4;
 
