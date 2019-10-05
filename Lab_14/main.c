@@ -21,6 +21,7 @@ void read_row(unsigned char*, long, long);
 void update_bmp_metadata(FILE*, long, long);
 int count_alive_near(long x, long y, long height, long width, unsigned char a[][width]);
 char is_any_alive(unsigned long height, unsigned long width, unsigned char a[][width]);
+int check_first_bytes();
 
 char *input_file_path;
 FILE *input_file;
@@ -95,7 +96,7 @@ int main(int argc, char *argv[]) {
 
     if (errno != EEXIST && errno != 0) {
         printf("Error when creating directory\n");
-        return 0;
+        return EXIT_FAILURE;
     }
 
     if (errno == EEXIST) {
@@ -108,16 +109,16 @@ int main(int argc, char *argv[]) {
 
     if (input_file == NULL) {
         printf("Error when opening file\n");
-        return 0;
+        return EXIT_FAILURE;
     }
 
     // Часть 3: чтение входного файла
     long height = get_height();
     long width = get_width();
 
-    if (height <= 0 || width <= 0){
+    if (height <= 0 || width <= 0 || !check_first_bytes()){
         printf("Error when reading file\n");
-        return 0;
+        return EXIT_FAILURE;
     }
 
     row_size = ((width + 31) / 32) * 4;
@@ -218,6 +219,12 @@ int main(int argc, char *argv[]) {
             char name[10] = {};
             sprintf(name, "%lu", current_iteration);
             FILE *output_file = create_template(strcat(name, ".bmp"), height);
+
+            if (output_file == NULL) {
+                printf("Error when creating new file\n");
+                exit(EXIT_FAILURE);
+            }
+
             for (long i = 0; i < height; ++i) {
                 write_row(pixel_array[i], width, i, output_file);
             }
@@ -234,14 +241,16 @@ int main(int argc, char *argv[]) {
 
 FILE* create_template(char *name, long height){
     FILE* file = fopen(name, "wb");
-    unsigned char template[] = {0x42, 0x4D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00, 0x00,
-                                0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
-                                0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00};
-    fwrite(template, 1, 62, file);
-    for (long i = 0; i < row_size * height; ++i) {
-        fwrite("\0", 1, 1, file);
+    if (file != NULL) {
+        unsigned char template[] = {0x42, 0x4D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x00, 0x00, 0x00,
+                                    0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
+                                    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                    0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00};
+        fwrite(template, 1, 62, file);
+        for (long i = 0; i < row_size * height; ++i) {
+            fwrite("\0", 1, 1, file);
+        }
     }
     return file;
 }
@@ -264,13 +273,6 @@ void read_row(unsigned char *row_array, long width, long row_number) {
     unsigned char *data = calloc(1, row_size);
     fseek(input_file, PIXEL_DATA + row_number * row_size, SEEK_SET);
     fread(data, 1, row_size, input_file);
-
-    // Debug
-//    for (long i = 0; i < row_size; ++i) {
-//        printf("%02X ", data[i]);
-//    }
-//    printf("\n");
-
     for (unsigned long i = 0; i < width; ++i) {
         *(row_array + i) = (data[i / 8] & (0x1u << (7u - i % 8))) >> (7u - i % 8);
     }
@@ -318,5 +320,17 @@ char is_any_alive(unsigned long height, unsigned long width, unsigned char a[][w
             }
         }
     }
+    return 0;
+}
+
+int check_first_bytes(){
+    fseek(input_file, 0, SEEK_SET);
+    char a[2];
+    fread(a, 1, 2, input_file);
+    if (strncmp(a, "BM", 2) == 0 || strncmp(a, "MB", 2) == 0) {
+        // Ok
+        return 1;
+    }
+    // Not ok
     return 0;
 }
