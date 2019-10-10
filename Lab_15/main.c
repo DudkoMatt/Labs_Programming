@@ -1,9 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 unsigned char USE_COMPRESSION = 0;
 // В теории можно добавить дополнительный аргумент для смены этого флага
 // Изначально
+
+
+FILE* create_template(char*, int);
+int read_file_and_write_to_archive(FILE*, char*);
+void extract_archive(char*);
 
 int main(int argc, char *argv[]) {
 
@@ -12,7 +18,7 @@ int main(int argc, char *argv[]) {
     // Часть 1: Разбор аргументов строки
 
     unsigned char _file = 0;
-    char* name_of_file;
+    char* name_of_file = "";
     unsigned char _create = 0;
     int index_of_first_file = 0;
     unsigned char _extract = 0;
@@ -82,8 +88,12 @@ int main(int argc, char *argv[]) {
             // ToDO
             // Использование сжатия
         } else {
-            // ToDO
             // Архивирование без сжатия
+            FILE* archive = create_template(name_of_file, argc - index_of_first_file);
+            for (int i = index_of_first_file; i < argc; ++i) {
+                read_file_and_write_to_archive(archive, argv[i]);
+            }
+            fclose(archive);
         }
     }
     else if (_list) {
@@ -91,9 +101,105 @@ int main(int argc, char *argv[]) {
         // Отобразить список элементов
     }
     else if (_extract) {
-        // ToDO
+        // ToDO: сжатый архив
         // Разархивировать файл
+        extract_archive(name_of_file);
     }
 
     return 0;
+}
+
+FILE* create_template(char* name_of_file, int number_of_files){
+    // Note: уже файл созданный до этого будет перезаписан
+    FILE* archive = fopen(name_of_file, "wb");
+
+    fwrite("ARC", 1, 3, archive);
+    fwrite(&USE_COMPRESSION, 1, 1, archive);
+
+    if (USE_COMPRESSION) {
+        // ToDO
+    }
+
+    // Количество файлов
+    fwrite(&number_of_files, sizeof(int), 1, archive);
+    
+    return archive;
+}
+
+int read_file_and_write_to_archive(FILE* archive, char* name_of_file) {
+    FILE* read_file = fopen(name_of_file, "rb");
+    if (read_file == NULL) {
+        printf("Error when opening file \"%s\", skipping\n", name_of_file);
+        return 1;
+    }
+
+    // Запись имени файла
+    for (unsigned long i = 0; i < strlen(name_of_file); ++i) {
+        char buffer = *(name_of_file + i);
+        fwrite(&buffer, 1, 1, archive);
+    }
+
+    char zero = 0x0;
+    unsigned char max_char = 0xFF;
+    fwrite(&max_char, 1, 1, archive);
+
+    unsigned long long bytes_written = 0;
+    long point_in_file_for_size = ftell(archive);
+    fwrite(&zero, sizeof(unsigned long long), 1, archive);
+
+    char buffer;
+    while (fread(&buffer, 1, 1, read_file) != 0) {
+        fwrite(&buffer, 1, 1, archive);
+        bytes_written += 1;
+    }
+
+    long last_point_in_file = ftell(archive);
+    fseek(archive, point_in_file_for_size, SEEK_SET);
+    fwrite(&bytes_written, sizeof(unsigned long long), 1, archive);
+    fseek(archive, last_point_in_file, SEEK_SET);
+
+    return 0;
+}
+
+void extract_archive(char* name_of_archive){
+    FILE* archive = fopen(name_of_archive, "rb");
+    char* buffer = calloc(1, 3);
+    fread(buffer, 1, 3, archive);
+    if (strcmp(buffer, "ARC") != 0) {
+        printf("This is not supportable file\n");
+        return;
+    }
+    free(buffer);
+    buffer = calloc(1, 1);
+    fread(buffer, 1, 1, archive);
+    if (*buffer == 1) {
+        // ToDO: С использованием сжатия
+    } else {
+        // Без использования сжатия
+        int number_of_files = 0;
+        fread(&number_of_files, sizeof(int), 1, archive);
+        for (int i = 0; i < number_of_files; ++i) {
+            unsigned long long k = 1;
+            char* buffer_name = calloc(1, 1);
+            *buffer_name = '\0';
+            unsigned char buffer_byte = 0;
+            fread(&buffer_byte, 1, 1, archive);
+            while (buffer_byte != 0xFF) {
+                realloc(buffer_name, k);
+                *(buffer_name + k - 1) = buffer_byte;
+                fread(&buffer_byte, 1, 1, archive);
+                k++;
+            }
+            *(buffer_name + k - 1) = '\0';
+            FILE* writing_file = fopen((const char*)buffer_name, "wb");
+            free(buffer_name);
+            unsigned long long size_of_file = 0;
+            fread(&size_of_file, sizeof(unsigned long long), 1, archive);
+            for (unsigned long long j = 0; j < size_of_file; ++j) {
+                fread(&buffer_byte, 1, 1, archive);
+                fwrite(&buffer_byte, 1, 1, writing_file);
+            }
+            fclose(writing_file);
+        }
+    }
 }
