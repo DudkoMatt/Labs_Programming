@@ -15,6 +15,7 @@ void list_files(char*);
 int main(int argc, char *argv[]) {
 
     // Архиватор файлов
+    // Limit to file size: MAXIMUM a bit less than 2Gb
 
     // Часть 1: Разбор аргументов строки
 
@@ -98,7 +99,7 @@ int main(int argc, char *argv[]) {
         }
     }
     else if (_list) {
-        // ToDO
+        // ToDO: сжатый архив
         // Отобразить список элементов
         list_files(name_of_file);
     }
@@ -124,7 +125,7 @@ FILE* create_template(char* name_of_file, int number_of_files){
 
     // Количество файлов
     fwrite(&number_of_files, sizeof(int), 1, archive);
-    
+
     return archive;
 }
 
@@ -254,6 +255,7 @@ void list_files(char* name_of_archive){
             free(buffer_name);
             size_of_file = 0;
             fread(&size_of_file, sizeof(unsigned long long), 1, archive);
+            // Note: maximum long
             fseek(archive, size_of_file, SEEK_CUR);
         }
     }
