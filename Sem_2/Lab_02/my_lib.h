@@ -16,21 +16,15 @@ class StringQueue {
     int amount;
 public:
 
-    // Конструктор по умолчанию (максимальной длины?)
-    StringQueue(int MAX_LENGTH);
+    // Конструктор по умолчанию + максимальной длины
+    explicit StringQueue(int MAX_LENGTH = 255);
 
-    // Конструктор копирования (очереди строк?)
+    // Конструктор копирования очереди строк
     StringQueue(const StringQueue &o);
-
-    // ToDO: Выяснить:
-    /* 1) В чем отличие "по умолчанию" и "максимальной длины"
-     * 2) Мы же пользуемся const? И мы же можем объявлять вот так, как здесь? (см. файл .cpp)
-     * 3) В чем отличие "копирования" от "очереди строк"?
-     */
 
     int getAmountInQueue();
 
-    void push(queueEntry s);
+    void push(const queueEntry s);
 
     char *pop();
 

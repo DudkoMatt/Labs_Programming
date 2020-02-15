@@ -5,7 +5,7 @@
 #include "my_lib.h"
 #include <cstring>
 
-// Конструктор по умолчанию
+// Конструктор по умолчанию + максимальной длины
 StringQueue::StringQueue(int MAX_LENGTH) : MAX_LENGTH(MAX_LENGTH) {
     queue = (queueEntry *) std::calloc(sizeof(queueEntry), MAX_LENGTH);
     tail = 0;
@@ -13,13 +13,12 @@ StringQueue::StringQueue(int MAX_LENGTH) : MAX_LENGTH(MAX_LENGTH) {
     amount = 0;
 }
 
-// Конструктор копирования
+// Конструктор копирования очереди строк
 StringQueue::StringQueue(const StringQueue &o) : MAX_LENGTH(o.MAX_LENGTH) {
     queue = (queueEntry *) std::calloc(sizeof(queueEntry), MAX_LENGTH);
     tail = o.tail;
     head = o.head;
     amount = o.amount;
-    // ToDO: проверить на то, что значение копируется, а не переписывается указатель
     int t = head;
     while (t != tail) {
         strcpy(queue[t], o.queue[t]);
@@ -31,7 +30,7 @@ int StringQueue::getAmountInQueue() {
     return amount;
 }
 
-void StringQueue::push(queueEntry s) {
+void StringQueue::push(const queueEntry s) {
     if (amount >= MAX_LENGTH)
         return;
     strcpy(*(queue + tail), s);
@@ -63,9 +62,11 @@ char *StringQueue::show_first() {
 void StringQueue::print() {
     if (amount <= 0) return;
     int t = head;
-    while (t != tail) {
+    int k = amount;
+    while (k > 0) {
         std::cout << queue[t] << " ";
         t = (t + 1) % MAX_LENGTH;
+        --k;
     }
     std::cout << "\n";
 }
