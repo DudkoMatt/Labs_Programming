@@ -49,7 +49,73 @@ using namespace std;
  *
  */
 
+class Menu {
+    StringQueue *queue{nullptr};
+public:
+    Menu() = default;
+
+    explicit Menu(StringQueue *queue) {
+        this->queue = queue;
+    }
+
+    void menuStart() {
+        int option;
+
+        if (!queue)
+            queue = new StringQueue();
+
+        do {
+            cout << "Выберите одно из следующих действий:\n"
+                    " 1: Добавление строки в очередь\n"
+                    " 2: Изъятие строки из очереди\n"
+                    " 3: Длина очереди\n"
+                    " 4: Просмотр последнего элемента\n"
+                    " 5: Просмотр первого элемента\n"
+                    " 6: Вывод на экран\n\n"
+                    " 0: Выход из программы\n"
+                    "";
+            cout << "Выберите один из вариантов: ";
+            cin >> option;
+
+            if (option == 1) {
+                char *str = new char[256];
+                cout << "Введите строку: ";
+                scanf("%255s", str);
+                queue->push(str);
+            } else if (option == 2) {
+                if (queue->getAmountInQueue() == 0) {
+                    cout << "Пустая очередь\n";
+                } else {
+                    cout << queue->pop() << "\n";
+                }
+            } else if (option == 3) {
+                cout << "Количество записей в очереди: " << queue->getAmountInQueue() << "\n";
+            } else if (option == 4) {
+                if (queue->getAmountInQueue() == 0) {
+                    cout << "Пустая очередь\n";
+                } else {
+                    cout << queue->show_last() << "\n";
+                }
+            } else if (option == 5) {
+                if (queue->getAmountInQueue() == 0) {
+                    cout << "Пустая очередь\n";
+                } else {
+                    cout << queue->show_first() << "\n";
+                }
+            } else if (option == 6) {
+                queue->print();
+            }
+            cout << "\n\n";
+        } while (option != 0);
+    };
+};
+
+
 int main() {
+    /*
+
+    // Тестирование
+
     StringQueue queue(10);
     queue.push("One");
     queue.push("Two");
@@ -66,5 +132,10 @@ int main() {
     cout << "Amount of entries: " << queue.getAmountInQueue() << "\n";
     cout << "First: " << queue.show_first() << "\n";
     cout << "Last: " << queue.show_last() << "\n";
+
+     */
+
+    Menu().menuStart();
+
     return 0;
 }
