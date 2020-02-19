@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cmath>
-
-using namespace std;
+#include <vector>
 
 /*
  * Лабораторная работа #4. “Виртуальные функции”.
@@ -55,7 +54,7 @@ public:
     double x, y;
 
     void initFromDialog() {
-        cin >> x >> y;
+        std::cin >> x >> y;
     }
 
     double distance_to_point(Point A) {
@@ -63,7 +62,7 @@ public:
     }
 
     void print() {
-        cout << "(" << x << "; " << y << ")\n";
+        std::cout << "(" << x << "; " << y << ")\n";
     }
 
 };
@@ -82,12 +81,12 @@ public:
     }
 
     void print() {
-//        cout << "Координаты первой точки: (" << X.x << "; " << X.y << ")\n";
-//        cout << "Координаты второй точки: (" << Y.x << "; " << Y.y << ")\n";
+//        std::cout << "Координаты первой точки: (" << X.x << "; " << X.y << ")\n";
+//        std::cout << "Координаты второй точки: (" << Y.x << "; " << Y.y << ")\n";
 
-        cout << "Координаты первой точки:";
+        std::cout << "Координаты первой точки:";
         X.print();
-        cout << "Координаты второй точки:";
+        std::cout << "Координаты второй точки:";
         Y.print();
     }
 };
@@ -103,11 +102,12 @@ public:
 // Интерфейс для классов, которые можно задать через диалог с пользователем.
 class IDialogInitiable {
 // Задать параметры объекта с помощью диалога с пользователем.
+public:
     virtual void initFromDialog() = 0;
 };
 
 // Интерфейс "Класс"
-class BaseObject {
+class BaseObject : public IGeoFig, public IDialogInitiable, public IPrintable {
 public:
 // Имя класса (типа данных).
     virtual const char *classname() = 0;
@@ -116,7 +116,7 @@ public:
     virtual unsigned int size() = 0;
 };
 
-class Hexagon : public IGeoFig, public BaseObject, public IDialogInitiable, public IPrintable {
+class Hexagon : public BaseObject {
 public:
 
     Point center{0, 0};
@@ -131,9 +131,9 @@ public:
     }
 
     void draw() override {
-        cout << "Центр шестиугольника: ";
+        std::cout << "Центр шестиугольника: ";
         center.print();
-        cout << "Длина основания: " << length;
+        std::cout << "Длина основания: " << length << "\n";
     }
 
     const char *classname() override {
@@ -141,19 +141,19 @@ public:
     }
 
     unsigned int size() override {
-        return sizeof(Hexagon);
+        return sizeof(*this);
     }
 
     void initFromDialog() override {
-        cout << "Инициализация\n";
-        cout << "Введите координаты точки центра через пробел: ";
+        std::cout << "Инициализация\n";
+        std::cout << "Введите координаты точки центра через пробел: ";
         center.initFromDialog();
-        cout << "Введите длину ребра шестиугольника: ";
-        cin >> length;
+        std::cout << "Введите длину ребра шестиугольника: ";
+        std::cin >> length;
     }
 };
 
-class IsoscelesTrapezium : public IGeoFig, public BaseObject, public IDialogInitiable, public IPrintable {
+class IsoscelesTrapezium : public BaseObject {
 public:
 
     // Пусть трапеция задана через два сонаправленных вектора, обозначающих основания трапеции
@@ -173,9 +173,9 @@ public:
     }
 
     void draw() override {
-        cout << "Первое основание трапеции\n";
+        std::cout << "Первое основание трапеции\n";
         a.print();
-        cout << "\nВторое основание трапеции\n";
+        std::cout << "\nВторое основание трапеции\n";
         b.print();
     }
 
@@ -184,23 +184,23 @@ public:
     }
 
     unsigned int size() override {
-        return sizeof(IsoscelesTrapezium);
+        return sizeof(*this);
     }
 
     void initFromDialog() override {
-        cout << "Инициализация\n";
-        cout << "Первое основание трапеции\n";
-        cout << "Введите координаты первой точки через пробел: ";
+        std::cout << "Инициализация\n";
+        std::cout << "Первое основание трапеции\n";
+        std::cout << "Введите координаты первой точки через пробел: ";
         a.X.initFromDialog();
 
-        cout << "Введите координаты второй точки через пробел: ";
+        std::cout << "Введите координаты второй точки через пробел: ";
         a.Y.initFromDialog();
 
-        cout << "\nВторое основание трапеции\n";
-        cout << "Введите координаты первой точки через пробел: ";
+        std::cout << "\nВторое основание трапеции\n";
+        std::cout << "Введите координаты первой точки через пробел: ";
         b.X.initFromDialog();
 
-        cout << "Введите координаты второй точки через пробел: ";
+        std::cout << "Введите координаты второй точки через пробел: ";
         b.Y.initFromDialog();
     }
 };
@@ -208,34 +208,115 @@ public:
 
 int main() {
 
+    /*
+
+    // Тестирование классов
+
     // Шестиугольник
-    cout << "Шестиугольник\n-------------\n";
+    std::cout << "Шестиугольник\n-------------\n";
 
     Hexagon h;
     h.initFromDialog();
 
-    cout << "Площадь: " << h.square() << "\n";
-    cout << "Периметр: " << h.perimeter() << "\n";
+    std::cout << "Площадь: " << h.square() << "\n";
+    std::cout << "Периметр: " << h.perimeter() << "\n";
 
-    cout << "Имя класса: " << h.classname() << "\n";
-    cout << "Размер: " << h.size() << "\n";
+    std::cout << "Имя класса: " << h.classname() << "\n";
+    std::cout << "Размер: " << h.size() << "\n";
 
     h.draw();
-    cout << "\n";
+    std::cout << "\n";
 
     // Равнобедренная трапеция
-    cout << "\nРавнобедренная трапеция\n-----------------------\n";
+    std::cout << "\nРавнобедренная трапеция\n-----------------------\n";
 
     IsoscelesTrapezium trapezium;
     trapezium.initFromDialog();
 
-    cout << "Площадь: " << trapezium.square() << "\n";
-    cout << "Периметр: " << trapezium.perimeter() << "\n";
+    std::cout << "Площадь: " << trapezium.square() << "\n";
+    std::cout << "Периметр: " << trapezium.perimeter() << "\n";
 
-    cout << "Имя класса: " << trapezium.classname() << "\n";
-    cout << "Размер: " << trapezium.size() << "\n";
+    std::cout << "Имя класса: " << trapezium.classname() << "\n";
+    std::cout << "Размер: " << trapezium.size() << "\n";
 
     trapezium.draw();
+
+     */
+
+    // Хранение множества фигур
+    std::vector<BaseObject*> geoObjects;
+
+    std::cout << "Введите количество хранимых объектов: ";
+
+    int k;
+    std::cin >> k;
+
+    if (k <= 0) return 0;
+
+    // Добавление пользователем через консоль
+    for (int i = 0; i < k; ++i) {
+        int type;
+        std::cout << "\nТипы объектов: \n";
+        std::cout << "1: Шестиугольник\n";
+        std::cout << "2: Равнобедренная трапеция\n";
+        do {
+            std::cout << "Введите тип объекта: ";
+            std::cin >> type;
+        }
+        while (!(type == 1 || type == 2));
+
+        if (type == 1)
+            geoObjects.push_back(new Hexagon);
+        else
+            geoObjects.push_back(new IsoscelesTrapezium);
+
+        geoObjects.back()->initFromDialog();
+    }
+
+    std::cout << "\n\nОтражение всех фигур:\n";
+
+    // Отражение всех фигур
+    int count = 0;
+    for (auto i : geoObjects) {
+        std::cout << count++ << "): " << i->classname() << "\n";
+        i->draw();
+        std::cout << "\n";
+    }
+
+
+    // Суммарная площадь всех фигур
+
+    std::cout << "\nСуммарная площадь всех фигур: ";
+
+    double s = 0;
+    for (auto i : geoObjects) {
+        s += i->square();
+    }
+
+    std::cout << s << "\n";
+
+
+    // Суммарный периметр всех фигур
+
+    std::cout << "Суммарный периметр всех фигур: ";
+
+    s = 0;
+    for (auto i : geoObjects) {
+        s += i->square();
+    }
+
+    std::cout << s << "\n";
+
+
+    // Память, занимаемая всеми экземплярами классов
+    std::cout << "Память, занимаемая всеми экземплярами классов: ";
+
+    unsigned int r = 0;
+    for (auto i : geoObjects) {
+        r += i->size();
+    }
+
+    std::cout << r << "\n";
 
     return 0;
 }
