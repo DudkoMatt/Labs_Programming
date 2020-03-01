@@ -43,10 +43,10 @@
 class IGeoFig {
 public:
 // Площадь.
-    virtual double square() = 0;
+    virtual double square() const = 0;
 
 // Периметр.
-    virtual double perimeter() = 0;
+    virtual double perimeter() const = 0;
 };
 
 class Point {
@@ -57,11 +57,11 @@ public:
         std::cin >> x >> y;
     }
 
-    double distance_to_point(Point A) {
+    double distance_to_point(Point A) const {
         return sqrt((x - A.x) * (x - A.x) + (y - A.y) * (y - A.y));
     }
 
-    void print() {
+    void print() const {
         std::cout << "(" << x << "; " << y << ")\n";
     }
 
@@ -72,15 +72,15 @@ class Vector2D {
 public:
     Point X, Y;
 
-    Point middle() {
+    Point middle() const {
         return {(X.x + Y.x) / 2.0, (X.y + Y.y) / 2.0};
     }
 
-    double length() {
+    double length() const {
         return X.distance_to_point(Y);
     }
 
-    void print() {
+    void print() const {
 //        std::cout << "Координаты первой точки: (" << X.x << "; " << X.y << ")\n";
 //        std::cout << "Координаты второй точки: (" << Y.x << "; " << Y.y << ")\n";
 
@@ -91,12 +91,25 @@ public:
     }
 };
 
+// Интерфейс "Физический объект".
+class IPhysObject {
+public:
+// Масса, кг.
+    virtual double mass() const = 0;
+// Координаты центра масс, м.
+    virtual Point position() const = 0;
+// Сравнение по массе.
+    virtual bool operator== ( const IPhysObject& ob ) const = 0;
+// Сравнение по массе.
+    virtual bool operator< ( const IPhysObject& ob ) const = 0;
+};
+
 // Интерфейс "Отображаемый"
 class IPrintable {
 public:
 // Отобразить на экране
 // (выводить в текстовом виде параметров фигуры).
-    virtual void draw() = 0;
+    virtual void draw() const = 0;
 };
 
 // Интерфейс для классов, которые можно задать через диалог с пользователем.
@@ -107,40 +120,42 @@ public:
 };
 
 // Интерфейс "Класс"
-class BaseObject : public IGeoFig, public IDialogInitiable, public IPrintable {
+class BaseObject {
 public:
 // Имя класса (типа данных).
-    virtual const char *classname() = 0;
+    virtual const char *classname() const = 0;
 
 // Размер занимаемой памяти.
-    virtual unsigned int size() = 0;
+    virtual unsigned int size() const = 0;
 };
 
-class Hexagon : public BaseObject {
+class BaseClass : public BaseObject, public IGeoFig, public IDialogInitiable, public IPrintable, public IPhysObject {};
+
+class Hexagon : public BaseClass {
 public:
 
     Point center{0, 0};
     double length = 0;
 
-    double square() override {
+    double square() const override {
         return 6 * length * length * sqrt(3) / 4.0;
     }
 
-    double perimeter() override {
+    double perimeter() const override {
         return 6 * length;
     }
 
-    void draw() override {
+    void draw() const override {
         std::cout << "Центр шестиугольника: ";
         center.print();
         std::cout << "Длина основания: " << length << "\n";
     }
 
-    const char *classname() override {
+    const char *classname() const override {
         return "Hexagon";
     }
 
-    unsigned int size() override {
+    unsigned int size() const override {
         return sizeof(*this);
     }
 
@@ -151,9 +166,25 @@ public:
         std::cout << "Введите длину ребра шестиугольника: ";
         std::cin >> length;
     }
+
+    double mass() const override {
+        return square();
+    }
+
+    Point position() const override {
+        return center;
+    }
+
+    bool operator==(const IPhysObject &ob) const override {
+        return this->mass() == ob.mass();
+    }
+
+    bool operator<(const IPhysObject &ob) const override {
+        return this->mass() < ob.mass();
+    }
 };
 
-class IsoscelesTrapezium : public BaseObject {
+class IsoscelesTrapezium : public BaseClass {
 public:
 
     // Пусть трапеция задана через два сонаправленных вектора, обозначающих основания трапеции
@@ -163,27 +194,27 @@ public:
     Vector2D b{{0, 0},
                {0, 0}};
 
-    double square() override {
+    double square() const override {
         return a.middle().distance_to_point(b.middle()) * (a.length() + b.length()) / 2.0;
     }
 
-    double perimeter() override {
+    double perimeter() const override {
         // Note: Векторы сонаправлены
         return a.length() + b.length() + a.X.distance_to_point(b.X) + a.Y.distance_to_point(b.Y);
     }
 
-    void draw() override {
+    void draw() const override {
         std::cout << "Первое основание трапеции\n";
         a.print();
         std::cout << "\nВторое основание трапеции\n";
         b.print();
     }
 
-    const char *classname() override {
+    const char *classname() const override {
         return "IsoscelesTrapezium";
     }
 
-    unsigned int size() override {
+    unsigned int size() const override {
         return sizeof(*this);
     }
 
@@ -202,6 +233,23 @@ public:
 
         std::cout << "Введите координаты второй точки через пробел: ";
         b.Y.initFromDialog();
+    }
+
+    double mass() const override {
+        return square();
+    }
+
+    Point position() const override {
+        Vector2D temp{a.X, b.Y};
+        return temp.middle();
+    }
+
+    bool operator==(const IPhysObject &ob) const override {
+        return this->mass() == ob.mass();
+    }
+
+    bool operator<(const IPhysObject &ob) const override {
+        return this->mass() < ob.mass();
     }
 };
 
@@ -244,7 +292,7 @@ int main() {
      */
 
     // Хранение множества фигур
-    std::vector<BaseObject*> geoObjects;
+    std::vector<BaseClass*> geoObjects;
 
     std::cout << "Введите количество хранимых объектов: ";
 
@@ -302,7 +350,7 @@ int main() {
 
     s = 0;
     for (auto i : geoObjects) {
-        s += i->square();
+        s += i->perimeter();
     }
 
     std::cout << s << "\n";
@@ -317,6 +365,17 @@ int main() {
     }
 
     std::cout << r << "\n";
+
+
+    // Центры объектов
+    std::cout << "\nЦентры объектов:\n";
+
+    count = 0;
+    for (auto i : geoObjects) {
+        std::cout << ++count << ":\n";
+        i->position().print();
+    }
+
 
     return 0;
 }
