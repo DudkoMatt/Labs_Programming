@@ -129,10 +129,15 @@ public:
     virtual unsigned int size() const = 0;
 };
 
-class BaseClass : public BaseObject, public IGeoFig, public IDialogInitiable, public IPrintable, public IPhysObject {};
+class BaseClass : public BaseObject, public IGeoFig, public IDialogInitiable, public IPrintable, public IPhysObject {
+public:
+    virtual ~BaseClass() = default;
+};
 
 class Hexagon : public BaseClass {
 public:
+
+    ~Hexagon() override = default;
 
     Point center{0, 0};
     double length = 0;
@@ -186,6 +191,8 @@ public:
 
 class IsoscelesTrapezium : public BaseClass {
 public:
+
+    ~IsoscelesTrapezium() override = default;
 
     // Пусть трапеция задана через два сонаправленных вектора, обозначающих основания трапеции
     Vector2D a{{0, 0},
@@ -376,6 +383,10 @@ int main() {
         i->position().print();
     }
 
+    // Удаление и освобождение памяти
+    for (auto & geoObject : geoObjects) {
+        delete geoObject;
+    }
 
     return 0;
 }
