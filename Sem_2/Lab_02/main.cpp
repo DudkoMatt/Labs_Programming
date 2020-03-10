@@ -108,6 +108,10 @@ public:
             cout << "\n\n";
         } while (option != 0);
     };
+
+    ~Menu() {
+        delete queue;
+    }
 };
 
 
