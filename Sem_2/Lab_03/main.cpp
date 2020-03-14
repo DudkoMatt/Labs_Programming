@@ -71,7 +71,7 @@ int main() {
     d2 += 9;
 
     d3 = d1 + d2;
-    d4 = d1 + d2;
+    d4 = d1.operator+(d2);
 
     cout << "Print d1:\n";
     d1.print();
