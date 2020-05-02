@@ -23,6 +23,8 @@ class CircleBuffer {
 public:
     explicit CircleBuffer(int init_capacity = INIT_CAPACITY) {
         capacity = init_capacity;
+        head = 0;
+        tail = 0;
         size = 0;
         array_head = (T *) calloc(sizeof(T), init_capacity);
         if (array_head == nullptr)
@@ -46,16 +48,20 @@ public:
     */
 
     iterator begin() {
-        return iterator(array_head, 0);
+        return iterator(array_head, size, capacity, head);
     }
 
     iterator end() {
-        return iterator(array_head, size);
+        return iterator(array_head, size, capacity, tail);
     }
 
     void push_back(T t) {
+        if (tail == head && size == capacity)
+            throw std::out_of_range("Buffer overflow");
+
         *end() = t;
         size++;
+        tail = (tail + 1 + capacity) % capacity;
     }
 
     T pop_back() {
@@ -64,22 +70,41 @@ public:
 
         T value = *(end() - 1);
         size--;
+        tail = (tail - 1 + capacity) % capacity;
+        return value;
+    }
+
+    void push_front(T t) {
+        if (head == tail && size == capacity)
+            throw std::out_of_range("Buffer overflow");
+        *(array_head + (head - 1 + capacity) % capacity) = t;
+        size++;
+        head = (head - 1 + capacity) % capacity;
+    }
+
+    T pop_front() {
+        if (size == 0)
+            throw std::out_of_range("Trying to remove when size == 0");
+        T value = *begin();
+        size--;
+        head = (head + 1) % capacity;
         return value;
     }
 
 private:
     static const unsigned INIT_CAPACITY = 20;
     T *array_head;
+    int head, tail;
     unsigned capacity;
     unsigned size;
 };
 
 template <class T>
-class CircleBuffer<T> :: iterator : public std::iterator<std::random_access_iterator_tag, T>{
+class CircleBuffer<T> :: iterator {//: public std::iterator<std::random_access_iterator_tag, T>{
 public:
 
 //    explicit iterator(int pos = 0): head(nullptr), pos(pos) {}
-    explicit iterator(T *head, int pos = 0): head(head), pos(pos) {}
+    explicit iterator(T *head, unsigned size, unsigned capacity, int pos): head(head), size(size), pos(pos), capacity(capacity) {}
 
     // Input Iterator Requirements
     // ---------------------------
@@ -89,13 +114,15 @@ public:
 
     // Pre-increment
     iterator& operator++() {
-        pos++;
-        return *this; // ToDO
+        pos = (pos + 1) % capacity;
+        return *this;
     }
 
     // Post-increment
-    iterator operator++(int) {
-        return iterator(head, pos++);
+    const iterator operator++(int) {
+        const iterator old = iterator(head, pos);
+        pos = (pos + 1) % capacity;
+        return old;
     }
 
 //    T operator*() {
@@ -126,37 +153,46 @@ public:
     // Bidirectional Iterator Requirements
     // Pre-decrement
     iterator& operator--() {
-        pos--;
-        return *this; // ToDO
+        pos = (pos - 1 + capacity) % capacity;
+        return *this;
     }
 
     // Post-decrement
-    iterator operator--(int) {
-        return iterator(head, pos--);
+    const iterator operator--(int) {
+        const iterator old(head, pos);
+        pos = (pos - 1 + capacity) % capacity;
+        return old;
     }
 
     // Random Access Iterator Requirements
     iterator& operator+(int n) {
         this->pos += n;
-        return *this;  // ToDO
+        pos %= capacity;
+        return *this;
     }
 
     iterator& operator-(int n) {
         this->pos -= n;
+        pos = ((std::abs(pos) + capacity - 1) / capacity * capacity + pos) % capacity;
         return *this;
     }
 
     T operator[](int n){
+        if (n >= size) {
+            throw std::out_of_range("Out of bounds exception");
+        }
         return *(head + n);
     }
 
     iterator& operator+=(int n) {
         this->pos += n;
+        pos %= capacity;
         return *this;
     }
 
     iterator& operator-=(int n) {
         this->pos -= n;
+        pos = ((std::abs(pos) + capacity - 1) / capacity * capacity + pos) % capacity;
         return *this;
     }
 
@@ -193,6 +229,8 @@ public:
 
 private:
     int pos;
+    unsigned size;
+    unsigned capacity;
     T *head;
 };
 
@@ -214,11 +252,21 @@ int main() {
     *iterator = 1;
     int k = iterator;    // ToDO: it's not valid
     int k_ = *iterator;  //  Must be valid
-    std::fill(circleBuffer.begin(), circleBuffer.end() + 5, 1);
+//    std::fill(circleBuffer.begin(), circleBuffer.end() + 5, 1);
     std::cout << k;
 
     circleBuffer.push_back(1);
     circleBuffer.pop_back();
+    circleBuffer.push_back(2);
+
+    circleBuffer.push_back(5);
+    circleBuffer.push_front(6);
+    circleBuffer.push_front(-1);
+
+    circleBuffer.pop_front();
+    circleBuffer.pop_front();
+    circleBuffer.pop_front();
+    circleBuffer.pop_front();
 
     std::cout << "";
     return 0;
