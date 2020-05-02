@@ -53,18 +53,30 @@ public:
         return iterator(array_head, size);
     }
 
+    void push_back(T t) {
+        *end() = t;
+        size++;
+    }
+
+    T pop_back() {
+        if (size == 0)
+            throw std::out_of_range("Trying to remove when size == 0");
+
+        T value = *(end() - 1);
+        size--;
+        return value;
+    }
+
 private:
-    static const int INIT_CAPACITY = 20;
-    int *array_head;
-    int capacity;
-    int size;
+    static const unsigned INIT_CAPACITY = 20;
+    T *array_head;
+    unsigned capacity;
+    unsigned size;
 };
 
 template <class T>
 class CircleBuffer<T> :: iterator : public std::iterator<std::random_access_iterator_tag, T>{
 public:
-
-    typedef T& reference;
 
 //    explicit iterator(int pos = 0): head(nullptr), pos(pos) {}
     explicit iterator(T *head, int pos = 0): head(head), pos(pos) {}
@@ -174,10 +186,10 @@ public:
     }
 
     // ToDO: conversion only for the reference
-//    template <class A>
-//    operator A() {
-//        return (A) *(head + pos);
-//    }
+    template <class A>
+    operator A() {
+        return (A) *(head + pos);
+    }
 
 private:
     int pos;
@@ -190,11 +202,11 @@ typename CircleBuffer<T>::iterator operator+(int n, typename CircleBuffer<T>::it
     return iterator;
 }
 
-template <class T>
-std::ostream& operator<<(std::ostream& stream, const typename CircleBuffer<T>::iterator &iterator) {
-    stream << iterator;
-    return stream;
-}
+//template <class T>
+//std::ostream& operator<<(std::ostream& stream, const typename CircleBuffer<T>::iterator &iterator) {
+//    stream << iterator;
+//    return stream;
+//}
 
 int main() {
     CircleBuffer<int> circleBuffer;
@@ -204,6 +216,9 @@ int main() {
     int k_ = *iterator;  //  Must be valid
     std::fill(circleBuffer.begin(), circleBuffer.end() + 5, 1);
     std::cout << k;
+
+    circleBuffer.push_back(1);
+    circleBuffer.pop_back();
 
     std::cout << "";
     return 0;
