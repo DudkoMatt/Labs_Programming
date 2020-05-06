@@ -38,14 +38,33 @@ public:
 
     struct Position {
         T* p;
-        explicit Position(T* p) : p(p) {}
+        T* head;
+        unsigned capacity;
+        explicit Position(T* p, T* head, unsigned capacity) : p(p), head(head), capacity(capacity) {}
 
         T& dereference() const { return *p; } // Получение текущего элемента.
         bool equal(const Position& other) const { return p == other.p; } // Проверка на равенство.
-        void increment() { ++p; } // Перемещение вперед.
-        void decrement() { --p; } // Перемещение назад.
-        void move_forward(int n) { p += n; } // Перемещение на "n" элементов.
-        int distance_to(const Position& other) const { return other.p - p; } // Расстояние до другой позиции.
+        void increment() { // Перемещение вперед.
+            if (p - head == capacity - 1)
+                p = head;
+            else
+                ++p;
+        }
+        void decrement() { // Перемещение назад.
+            if (p == head)
+                p = head + capacity - 1;
+            else
+                --p;
+        }
+        void move_forward(int n) { // Перемещение на "n" элементов.
+            p = head + (p - head + n) % capacity;
+        }
+        int distance_to(const Position& other) const { // Расстояние до другой позиции.
+            if (other.p < p)
+                return (other.p + capacity - p) % capacity;
+            else
+                return other.p - p;
+        }
     };
 
     struct iterator : std::iterator<std::random_access_iterator_tag, T> {
@@ -59,8 +78,6 @@ public:
         iterator& operator=(const iterator&) = default;
         ~iterator() = default;
         T& operator*() const { return pos.dereference(); }
-
-        // ToDO:
         iterator& operator++() { pos.increment(); return *this; }
         iterator operator++(int) { auto old = *this; ++(*this); return old; }
 
@@ -68,7 +85,6 @@ public:
         T* operator->() const;
 
         // Операции, необходимые для BidirectionalIterator.
-        // ToDO:
         iterator& operator--() { pos.decrement(); return *this; }
         iterator operator--(int) { auto old = *this; --(*this); return old; }
 
@@ -115,11 +131,11 @@ public:
     */
 
     iterator begin() {
-        return iterator(Position(array_head_ptr + head));
+        return iterator(Position(array_head_ptr + head, array_head_ptr, capacity));
     }
 
     iterator end() {
-        return iterator(Position(array_head_ptr + size));
+        return iterator(Position(array_head_ptr + tail, array_head_ptr, capacity));
     }
 
     void push_back(T t) {
