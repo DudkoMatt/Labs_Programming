@@ -334,7 +334,7 @@ public:
         iterator it = this->begin();
         while (it != this->end()) {
             *(new_array_ptr + k) = *it;
-            ++k;
+            ++k; ++it;
         }
 
         free(array_head_ptr);
@@ -344,7 +344,7 @@ public:
 
         if (size > new_capacity) {
             size = new_capacity;
-            tail = 0;
+            tail = new_capacity;
         } else {
             tail = size;
         }
@@ -388,6 +388,7 @@ int main() {
 
     buffer.erase(buffer.begin());
     buffer.insert(buffer.begin() + 1, -1);
+    buffer.change_capacity(2);
 
 
     auto iterator1 = buffer.begin();
