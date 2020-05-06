@@ -89,26 +89,35 @@ public:
 
         // ToDO:
         void move_forward(int n) { // Перемещение на "n" элементов.
-            if (array_head_ptr + tail < p) {
-                if (((array_head_ptr + tail + capacity) - p) % capacity >= n) {
-                    // Хватает элементов
-                    p = array_head_ptr + (p - array_head_ptr + n) % capacity;
-                } else {
-                    // Не хватает
-                    p = array_head_ptr + capacity + ((array_head_ptr + tail + capacity) - p) % capacity - n;
-                    //                            ^ -- сколько элементов не хватило
+            if (n > 0)
+                for (int i = 0; i < n; ++i) {
+                    this->increment();
                 }
-            } else {
-                // p <= tail
-                if (tail - (p - array_head_ptr) >= n) {
-                    // Хватает элементов
-                    p = array_head_ptr + (p - array_head_ptr + n) % capacity;
-                } else {
-                    // Не хватает
-                    p = array_head_ptr + capacity + ((array_head_ptr + tail + capacity) - p) % capacity - n;
-                    //                            ^ -- сколько элементов не хватило
+            else
+                for (int j = 0; j < -n; ++j) {
+                    this->decrement();
                 }
-            }
+
+//            if (array_head_ptr + tail < p) {
+//                if (((array_head_ptr + tail + capacity) - p) % capacity >= n) {
+//                    // Хватает элементов
+//                    p = array_head_ptr + (p - array_head_ptr + n) % capacity;
+//                } else {
+//                    // Не хватает
+//                    p = array_head_ptr + capacity + ((array_head_ptr + tail + capacity) - p) % capacity - n;
+//                    //                            ^ -- сколько элементов не хватило
+//                }
+//            } else {
+//                // p <= tail
+//                if (tail - (p - array_head_ptr) >= n) {
+//                    // Хватает элементов
+//                    p = array_head_ptr + (p - array_head_ptr + n) % capacity;
+//                } else {
+//                    // Не хватает
+//                    p = array_head_ptr + capacity + ((array_head_ptr + tail + capacity) - p) % capacity - n;
+//                    //                            ^ -- сколько элементов не хватило
+//                }
+//            }
         }
 
         int distance_to(const Position& other) const { // Расстояние до другой позиции.
@@ -182,12 +191,12 @@ public:
         bool operator>(const iterator& rhs) const { return rhs.operator<(*this); }
         bool operator<=(const iterator& rhs) const { return !(rhs.operator>(*this)); }
         bool operator>=(const iterator& rhs) const { return !(this->operator<(rhs)); }
-        iterator operator+(int n) { this->operator+=(n); return *this; }
+        iterator operator+(int n) { iterator new_it(this->pos); new_it.operator+=(n); return new_it; }
 
         // ToDO:
         //        iterator operator+(int n, iterator it) { return it + n; }
 
-        iterator operator-(int n) { this->operator-=(n); return *this; }
+        iterator operator-(int n) { iterator new_it(this->pos); new_it.operator-=(n); return new_it; }
 
         // ToDO:
         //        int operator-(const iterator& lhs, const iterator& rhs) { return rhs.pos.distance_to(lhs.pos); }
@@ -270,8 +279,7 @@ public:
         return value;
     }
 
-    void insert(const iterator it, const T& val) {
-        // ToDO
+    void insert(iterator it, const T& val) {
         if (size == capacity)
             throw std::out_of_range("Buffer overflow");
         if (it > end() && it < begin())
@@ -279,17 +287,19 @@ public:
 
         iterator back_iter = end();
         while (back_iter != it) {
-            *back_iter = *(back_iter - 1);
+            T value = *(back_iter - 1);
+            *back_iter = value;
             --back_iter;
         }
         *it = val;
 
         size++;
         tail = (tail + 1) % capacity;
+        if (size == capacity)
+            tail = capacity;
     }
 
     void erase(iterator it) {
-        // ToDO
         if (size == 0)
             throw std::out_of_range("Trying to remove when size == 0");
 
@@ -306,6 +316,7 @@ public:
         return *(array_head_ptr[head]);
     }
 
+    // ToDO: tail
     T& back() {
         return *(array_head_ptr[tail - 1]);
     }
@@ -360,7 +371,7 @@ int main() {
 //    buffer.push_back(0);
     buffer.push_back(1);
     buffer.push_back(2);
-    buffer.push_back(3);
+//    buffer.push_back(3);
 //    buffer.pop_back();
 //    buffer.push_back(3);
 //    buffer.pop_front();
@@ -375,29 +386,12 @@ int main() {
     // ToDO: try erase
     // ToDO: try change_capacity
 
+    buffer.erase(buffer.begin());
+    buffer.insert(buffer.begin() + 1, -1);
+
+
     auto iterator1 = buffer.begin();
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1--;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
-    iterator1++;
+    *iterator1 = -5;
 
     auto it_begin = buffer.begin();
     auto it_end = buffer.end();
