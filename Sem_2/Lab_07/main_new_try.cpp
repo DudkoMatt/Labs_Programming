@@ -61,7 +61,6 @@ public:
             } else if (p < array_head_ptr) {
                 ++p;
             } else {
-                // ToDO:
                 if (p - array_head_ptr == capacity - 1)
                     p = array_head_ptr;
                 else
@@ -87,7 +86,6 @@ public:
             }
         }
 
-        // ToDO:
         void move_forward(int n) { // Перемещение на "n" элементов.
             if (n > 0)
                 for (int i = 0; i < n; ++i) {
@@ -121,8 +119,6 @@ public:
         }
 
         int distance_to(const Position& other) const { // Расстояние до другой позиции.
-            // ToDO
-
             int other_idx;
             if (other.p >= array_head_ptr + capacity) {
                 other_idx = other.p - (array_head_ptr + capacity) + (size - 1);
@@ -144,11 +140,6 @@ public:
             }
 
             return other_idx - this_idx;
-
-//            if (other.p < p)
-//                return (other.p + capacity - p) % capacity;
-//            else
-//                return other.p - p;
         }
     };
 
@@ -197,10 +188,7 @@ public:
         //        iterator operator+(int n, iterator it) { return it + n; }
 
         iterator operator-(int n) { iterator new_it(this->pos); new_it.operator-=(n); return new_it; }
-
-        // ToDO:
-        //        int operator-(const iterator& lhs, const iterator& rhs) { return rhs.pos.distance_to(lhs.pos); }
-
+        int operator-(const iterator& rhs) { return rhs.pos.distance_to(this->pos); }
     };
 
     // Операции, необходимые для всех категорий итераторов.
@@ -236,7 +224,6 @@ public:
     }
 
     T pop_back() {
-        // ToDO
         if (size == 0)
             throw std::out_of_range("Trying to remove when size == 0");
 
@@ -253,7 +240,6 @@ public:
     }
 
     void push_front(T t) {
-        // ToDO
         if (size == capacity)
             throw std::out_of_range("Buffer overflow");
 
@@ -265,7 +251,6 @@ public:
     }
 
     T pop_front() {
-        // ToDO
         if (size == 0)
             throw std::out_of_range("Trying to remove when size == 0");
 
@@ -383,20 +368,11 @@ int main() {
     buffer.push_back(4);
     buffer.push_back(5);
 
-
-    // ToDO: try insert
-    // ToDO: try erase
-    // ToDO: try change_capacity
-
-    buffer.erase(buffer.begin());
-    buffer.insert(buffer.begin() + 1, -1);
-    buffer.change_capacity(2);
+//    buffer.erase(buffer.begin());
+//    buffer.insert(buffer.begin() + 1, -1);
+//    buffer.change_capacity(2);
 
     int get_back = buffer.back();
-
-
-    auto iterator1 = buffer.begin();
-    *iterator1 = -5;
 
     auto it_begin = buffer.begin();
     auto it_end = buffer.end();
@@ -409,11 +385,11 @@ int main() {
     std::cout << "\n\n";
     std::fill(buffer.begin(), buffer.end(), 1);
 
+    auto it = std::find(buffer.begin(), buffer.end(), 1);
+
     for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
         std::cout << *iterator << " ";
     }
-//
-//    std::cout << "\n";
 
     return 0;
 }
