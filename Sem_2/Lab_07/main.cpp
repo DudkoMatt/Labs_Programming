@@ -2,6 +2,11 @@
 #include <algorithm>
 
 /*
+ * https://ru.stackoverflow.com/questions/485676/%D0%9A%D0%B0%D0%BA-%D0%BD%D0%B0%D0%BF%D0%B8%D1%81%D0%B0%D1%82%D1%8C-%D1%81%D0%B2%D0%BE%D0%B9-randomaccess-%D0%B8%D1%82%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80
+ * https://ideone.com/qNRUKB
+*/
+
+/*
  * Лабораторная работа №7
  * Реализовать кольцевой буфер в виде stl-совместимого
  * контейнера (например, может быть использован с стандартными
@@ -86,6 +91,7 @@ public:
             }
         }
 
+        // ToDO
         void move_forward(int n) { // Перемещение на "n" элементов.
             if (n > 0)
                 for (int i = 0; i < n; ++i) {
@@ -185,7 +191,7 @@ public:
         iterator operator+(int n) { iterator new_it(this->pos); new_it.operator+=(n); return new_it; }
 
         // ToDO:
-        //        iterator operator+(int n, iterator it) { return it + n; }
+        friend iterator operator+(int n, iterator it) { return it + n; }
 
         iterator operator-(int n) { iterator new_it(this->pos); new_it.operator-=(n); return new_it; }
         int operator-(const iterator& rhs) { return rhs.pos.distance_to(this->pos); }
@@ -367,6 +373,12 @@ int main() {
 //    buffer.pop_front();
     buffer.push_back(4);
     buffer.push_front(5);
+
+
+    auto iter = buffer.begin();
+    auto iter1 = buffer.begin();
+    iter = 2 + iter;
+
 /*
     for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
         std::cout << *iterator << " ";
