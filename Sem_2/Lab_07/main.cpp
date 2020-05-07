@@ -1,9 +1,8 @@
 #include <iostream>
 #include <algorithm>
-#include <vector>
 
 /*
- * Лабораторная работа No7
+ * Лабораторная работа №7
  * Реализовать кольцевой буфер в виде stl-совместимого
  * контейнера (например, может быть использован с стандартными
  * алгоритмами), обеспеченного итератором произвольного доступа.
@@ -18,6 +17,7 @@
  * 6. Изменение капасити
  */
 
+
 template <class T>
 class CircleBuffer {
 public:
@@ -26,17 +26,173 @@ public:
         head = 0;
         tail = 0;
         size = 0;
-        array_head = (T *) calloc(sizeof(T), init_capacity);
-        if (array_head == nullptr)
+        array_head_ptr = (T *) calloc(sizeof(T), init_capacity);
+        if (array_head_ptr == nullptr)
             throw std::bad_alloc();
     }
 
     ~CircleBuffer() {
-        if (array_head)
-            free(array_head);
+        if (array_head_ptr)
+            free(array_head_ptr);
     }
 
-    class iterator;
+    struct Position {
+        T* p;
+        T* array_head_ptr;
+        int head, tail;
+        unsigned size;
+        unsigned capacity;
+        explicit Position(T* p, T* array_head_ptr, int head, int tail, unsigned capacity, unsigned size)
+                : p(p), array_head_ptr(array_head_ptr), head(head), tail(tail), capacity(capacity), size(size) {}
+
+        T& dereference() const { return *p; } // Получение текущего элемента.
+        bool equal(const Position& other) const { return p == other.p; } // Проверка на равенство.
+        void increment() { // Перемещение вперед.
+            if (p == array_head_ptr + (head + size - 1) % capacity) {
+                // Выводим за пределы - после выделенной памяти
+                p = array_head_ptr + tail;
+            } else if (p == array_head_ptr + tail && tail != capacity) {
+                p = array_head_ptr + capacity;
+            } else if (p >= array_head_ptr + capacity) {
+                ++p;
+            } else if (p == array_head_ptr - 1) {
+                // Если за пределами слева
+                p = array_head_ptr + head;
+            } else if (p < array_head_ptr) {
+                ++p;
+            } else {
+                if (p - array_head_ptr == capacity - 1)
+                    p = array_head_ptr;
+                else
+                    ++p;
+            }
+        }
+
+        void decrement() { // Перемещение назад.
+            if (p == array_head_ptr + head) {
+                // Выводим за пределы - сразу перед выделенной памятью
+                p = array_head_ptr - 1;
+            } else if (p < array_head_ptr) {
+                --p;
+            } else if (p == array_head_ptr + capacity) {
+                p = array_head_ptr + (head + size - 1) % capacity;
+            } else if (p > array_head_ptr + capacity) {
+                --p;
+            } else {
+                if (p == array_head_ptr)
+                    p = array_head_ptr + capacity - 1;
+                else
+                    --p;
+            }
+        }
+
+        void move_forward(int n) { // Перемещение на "n" элементов.
+            if (n > 0)
+                for (int i = 0; i < n; ++i) {
+                    this->increment();
+                }
+            else
+                for (int j = 0; j < -n; ++j) {
+                    this->decrement();
+                }
+
+//            if (array_head_ptr + tail < p) {
+//                if (((array_head_ptr + tail + capacity) - p) % capacity >= n) {
+//                    // Хватает элементов
+//                    p = array_head_ptr + (p - array_head_ptr + n) % capacity;
+//                } else {
+//                    // Не хватает
+//                    p = array_head_ptr + capacity + ((array_head_ptr + tail + capacity) - p) % capacity - n;
+//                    //                            ^ -- сколько элементов не хватило
+//                }
+//            } else {
+//                // p <= tail
+//                if (tail - (p - array_head_ptr) >= n) {
+//                    // Хватает элементов
+//                    p = array_head_ptr + (p - array_head_ptr + n) % capacity;
+//                } else {
+//                    // Не хватает
+//                    p = array_head_ptr + capacity + ((array_head_ptr + tail + capacity) - p) % capacity - n;
+//                    //                            ^ -- сколько элементов не хватило
+//                }
+//            }
+        }
+
+        int distance_to(const Position& other) const { // Расстояние до другой позиции.
+            int other_idx;
+            if (other.p >= array_head_ptr + capacity) {
+                other_idx = other.p - (array_head_ptr + capacity) + (size - 1);
+            } else if (other.p < array_head_ptr) {
+                other_idx = -(array_head_ptr - other.p);
+            } else {
+                // Внутри массива
+                other_idx = other.p - (array_head_ptr + head);
+            }
+
+            int this_idx;
+            if (p >= array_head_ptr + capacity) {
+                this_idx = p - (array_head_ptr + capacity) + (size - 1);
+            } else if (p < array_head_ptr) {
+                this_idx = -(array_head_ptr - p);
+            } else {
+                // Внутри массива
+                this_idx = p - (array_head_ptr + head);
+            }
+
+            return other_idx - this_idx;
+        }
+    };
+
+    struct iterator : std::iterator<std::random_access_iterator_tag, T> {
+        // Вложенный объект Position, и конструктор для него.
+        Position pos;
+        iterator(Position pos) : pos(pos) {}
+
+        // Операции, необходимые для всех категорий итераторов.
+        iterator() = default;
+        iterator(const iterator&) = default;
+        iterator& operator=(const iterator&) = default;
+        ~iterator() = default;
+        T& operator*() const { return pos.dereference(); }
+        iterator& operator++() { pos.increment(); return *this; }
+        iterator operator++(int) { auto old = *this; ++(*this); return old; }
+
+        // Операции, необходимые для InputIterator.
+        T* operator->() const;
+
+        // Операции, необходимые для BidirectionalIterator.
+        iterator& operator--() { pos.decrement(); return *this; }
+        iterator operator--(int) { auto old = *this; --(*this); return old; }
+
+        // Операции, необходимые для RandomAccessIterator.
+        T& operator[](int n) const { auto tmp = *this; tmp += n; return *tmp; }
+        iterator& operator+=(int n) { pos.move_forward(n); return *this; }
+        iterator& operator-=(int n) { return *this += -n; }
+
+
+        // ---------------------------------------------------------------
+
+        // Операции, необходимые для InputIterator.
+        bool operator==(const iterator& rhs) const { return this->pos.equal(rhs.pos); }
+        bool operator!=(const iterator& rhs) const { return !(this->operator==(rhs)); }
+
+        // Операции, необходимые для RandomAccessIterator.
+        bool operator<(const iterator& rhs) const { return this->pos.distance_to(rhs.pos) > 0; }
+
+        bool operator>(const iterator& rhs) const { return rhs.operator<(*this); }
+        bool operator<=(const iterator& rhs) const { return !(rhs.operator>(*this)); }
+        bool operator>=(const iterator& rhs) const { return !(this->operator<(rhs)); }
+        iterator operator+(int n) { iterator new_it(this->pos); new_it.operator+=(n); return new_it; }
+
+        // ToDO:
+        //        iterator operator+(int n, iterator it) { return it + n; }
+
+        iterator operator-(int n) { iterator new_it(this->pos); new_it.operator-=(n); return new_it; }
+        int operator-(const iterator& rhs) { return rhs.pos.distance_to(this->pos); }
+    };
+
+    // Операции, необходимые для всех категорий итераторов.
+    void swap(iterator& a, iterator& b) { std::swap(a.pos, b.pos); }
 
     /* Буфер должен обладать следующими возможностями:
     *  1. Вставка и удаление в конец
@@ -48,226 +204,216 @@ public:
     */
 
     iterator begin() {
-        return iterator(array_head, size, capacity, head);
+        return iterator(Position(array_head_ptr + head, array_head_ptr, head, tail, capacity, size));
     }
 
     iterator end() {
-        return iterator(array_head, size, capacity, tail);
+        return iterator(Position(array_head_ptr + tail, array_head_ptr, head, tail, capacity, size));
     }
 
     void push_back(T t) {
-        if (tail == head && size == capacity)
+        if (size == capacity || tail >= capacity)
             throw std::out_of_range("Buffer overflow");
 
-        *end() = t;
+        *this->end() = t;
         size++;
         tail = (tail + 1 + capacity) % capacity;
+        if (tail == head) {
+            tail = capacity;
+        }
     }
 
     T pop_back() {
         if (size == 0)
             throw std::out_of_range("Trying to remove when size == 0");
 
-        T value = *(end() - 1);
+        if (tail == capacity) {
+            // size == capacity
+            tail = (head + size - 1) % capacity;
+        } else {
+            --tail;
+        }
+
+        T value = *(array_head_ptr + tail);
         size--;
-        tail = (tail - 1 + capacity) % capacity;
         return value;
     }
 
     void push_front(T t) {
-        if (head == tail && size == capacity)
+        if (size == capacity)
             throw std::out_of_range("Buffer overflow");
-        *(array_head + (head - 1 + capacity) % capacity) = t;
-        size++;
+
+        *(array_head_ptr + (head - 1 + capacity) % capacity) = t;
         head = (head - 1 + capacity) % capacity;
+        size++;
+        if (size == capacity)
+            tail = capacity;
     }
 
     T pop_front() {
         if (size == 0)
             throw std::out_of_range("Trying to remove when size == 0");
+
         T value = *begin();
-        size--;
         head = (head + 1) % capacity;
+        size--;
+
+        if (tail == capacity)
+            tail = (head + size) % capacity;
+
         return value;
+    }
+
+    void insert(iterator it, const T& val) {
+        if (size == capacity)
+            throw std::out_of_range("Buffer overflow");
+        if (it > end() && it < begin())
+            throw std::out_of_range("Index out of range");
+
+        iterator back_iter = end();
+        while (back_iter != it) {
+            T value = *(back_iter - 1);
+            *back_iter = value;
+            --back_iter;
+        }
+        *it = val;
+
+        size++;
+        tail = (tail + 1) % capacity;
+        if (size == capacity)
+            tail = capacity;
+    }
+
+    void erase(iterator it) {
+        if (size == 0)
+            throw std::out_of_range("Trying to remove when size == 0");
+
+        while (it != end()) {
+            *it = *(it + 1);
+            ++it;
+        }
+
+        if (tail == capacity)
+            tail = (head + size - 1) % capacity;
+        else
+            tail = (tail - 1 + capacity) % capacity;
+        size--;
+    }
+
+    T& front() {
+        return *(array_head_ptr + head);
+    }
+
+    T& back() {
+        return *(array_head_ptr + (head + size - 1) % capacity);
+    }
+
+    T& at(int idx) {
+        return *(array_head_ptr + idx);
+    }
+
+    void change_capacity(unsigned new_capacity) {
+        T* new_array_ptr = (T*) calloc(sizeof(T), new_capacity);
+        if (!new_array_ptr)
+            throw std::bad_alloc();
+
+        int k = 0;
+        iterator it = this->begin();
+        while (it != this->end() && k < new_capacity) {
+            *(new_array_ptr + k) = *it;
+            ++k; ++it;
+        }
+
+        free(array_head_ptr);
+        array_head_ptr = new_array_ptr;
+        capacity =  new_capacity;
+        head = 0;
+
+        if (size > new_capacity) {
+            size = new_capacity;
+            tail = new_capacity;
+        } else {
+            tail = size;
+        }
     }
 
 private:
     static const unsigned INIT_CAPACITY = 20;
-    T *array_head;
+    T *array_head_ptr;
     int head, tail;
-    unsigned capacity;
-    unsigned size;
-};
-
-template <class T>
-class CircleBuffer<T> :: iterator {//: public std::iterator<std::random_access_iterator_tag, T>{
-public:
-
-//    explicit iterator(int pos = 0): head(nullptr), pos(pos) {}
-    explicit iterator(T *head, unsigned size, unsigned capacity, int pos): head(head), size(size), pos(pos), capacity(capacity) {}
-
-    // Input Iterator Requirements
-    // ---------------------------
-    bool operator!= (iterator &it) {
-        return it.pos != this->pos;
-    }
-
-    // Pre-increment
-    iterator& operator++() {
-        pos = (pos + 1) % capacity;
-        return *this;
-    }
-
-    // Post-increment
-    const iterator operator++(int) {
-        const iterator old = iterator(head, pos);
-        pos = (pos + 1) % capacity;
-        return old;
-    }
-
-//    T operator*() {
-//        return *(head + pos);
-//    }
-
-    iterator& operator*() {
-        return *this;
-    }
-
-//    iterator& operator*(int) {
-//        return *this;
-//    }
-
-    bool operator==(iterator &it){
-        return this->pos == it.pos;
-    }
-    // ---------------------------
-
-    // Output Iterator Requirements
-    // ---------------------------
-    // ToDO: ввод через *
-    // ---------------------------
-
-    // Forward Iterator Requirements
-    // Already satisfied
-
-    // Bidirectional Iterator Requirements
-    // Pre-decrement
-    iterator& operator--() {
-        pos = (pos - 1 + capacity) % capacity;
-        return *this;
-    }
-
-    // Post-decrement
-    const iterator operator--(int) {
-        const iterator old(head, pos);
-        pos = (pos - 1 + capacity) % capacity;
-        return old;
-    }
-
-    // Random Access Iterator Requirements
-    iterator& operator+(int n) {
-        this->pos += n;
-        pos %= capacity;
-        return *this;
-    }
-
-    iterator& operator-(int n) {
-        this->pos -= n;
-        pos = ((std::abs(pos) + capacity - 1) / capacity * capacity + pos) % capacity;
-        return *this;
-    }
-
-    T operator[](int n){
-        if (n >= size) {
-            throw std::out_of_range("Out of bounds exception");
-        }
-        return *(head + n);
-    }
-
-    iterator& operator+=(int n) {
-        this->pos += n;
-        pos %= capacity;
-        return *this;
-    }
-
-    iterator& operator-=(int n) {
-        this->pos -= n;
-        pos = ((std::abs(pos) + capacity - 1) / capacity * capacity + pos) % capacity;
-        return *this;
-    }
-
-    int operator-(iterator it) {
-        return this->pos - it.pos;
-    }
-
-    bool operator>(iterator it) {
-        return this->pos > it.pos;
-    }
-
-    bool operator<(iterator it) {
-        return this->pos < it.pos;
-    }
-
-    bool operator>=(iterator it) {
-        return this->pos >= it.pos;
-    }
-
-    bool operator<=(iterator it) {
-        return this->pos <= it.pos;
-    }
-
-    iterator& operator=(T t){
-        *(head + pos) = t;
-        return *this;
-    }
-
-    // ToDO: conversion only for the reference
-    template <class A>
-    operator A() {
-        return (A) *(head + pos);
-    }
-
-private:
-    int pos;
     unsigned size;
     unsigned capacity;
-    T *head;
 };
 
-template <class T>
-typename CircleBuffer<T>::iterator operator+(int n, typename CircleBuffer<T>::iterator iterator) {
-    iterator.pos += n;
-    return iterator;
-}
+template<class T>
+typename CircleBuffer<T>::iterator operator+(int n, typename CircleBuffer<T>::iterator it) { return it + n; }
 
-//template <class T>
-//std::ostream& operator<<(std::ostream& stream, const typename CircleBuffer<T>::iterator &iterator) {
-//    stream << iterator;
-//    return stream;
-//}
+template<class T>
+int operator-(const typename CircleBuffer<T>::iterator& lhs, const typename CircleBuffer<T>::iterator& rhs) { return rhs.pos.distance_to(lhs.pos); }
 
 int main() {
-    CircleBuffer<int> circleBuffer;
-    CircleBuffer<int>::iterator iterator = circleBuffer.begin();
-    *iterator = 1;
-    int k = iterator;    // ToDO: it's not valid
-    int k_ = *iterator;  //  Must be valid
-//    std::fill(circleBuffer.begin(), circleBuffer.end() + 5, 1);
-    std::cout << k;
+    CircleBuffer<int> buffer = CircleBuffer<int>(5);
+    buffer.push_back(0);
+//    buffer.pop_back();
+//    buffer.push_back(0);
+    buffer.push_back(1);
+    buffer.push_back(2);
+    buffer.push_back(3);
+//    buffer.pop_back();
+//    buffer.push_back(3);
+    buffer.pop_front();
+//    buffer.pop_front();
+//    buffer.pop_front();
+//    buffer.pop_front();
+    buffer.push_back(4);
+    buffer.push_front(5);
+/*
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";
 
-    circleBuffer.push_back(1);
-    circleBuffer.pop_back();
-    circleBuffer.push_back(2);
+    buffer.pop_front();
+    buffer.push_front(-6);
 
-    circleBuffer.push_back(5);
-    circleBuffer.push_front(6);
-    circleBuffer.push_front(-1);
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";
 
-    circleBuffer.pop_front();
-    circleBuffer.pop_front();
-    circleBuffer.pop_front();
-    circleBuffer.pop_front();
+    buffer.erase(buffer.begin());
 
-    std::cout << "";
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";
+
+    buffer.insert(buffer.begin() + 1, -1);
+
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";*/
+
+    buffer.change_capacity(10);
+
+//    int get_back = buffer.back();
+//
+//    auto it_begin = buffer.begin();
+//    auto it_end = buffer.end();
+
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+
+    std::cout << "\n";
+    std::fill(buffer.begin(), buffer.end(), 1);
+
+    auto it = std::find(buffer.begin(), buffer.end(), 1);
+
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+
     return 0;
 }
