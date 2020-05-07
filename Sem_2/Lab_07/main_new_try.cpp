@@ -319,7 +319,7 @@ public:
 
         int k = 0;
         iterator it = this->begin();
-        while (it != this->end()) {
+        while (it != this->end() && k < new_capacity) {
             *(new_array_ptr + k) = *it;
             ++k; ++it;
         }
@@ -366,23 +366,47 @@ int main() {
 //    buffer.pop_front();
 //    buffer.pop_front();
     buffer.push_back(4);
-    buffer.push_back(5);
+    buffer.push_front(5);
+/*
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";
 
-//    buffer.erase(buffer.begin());
-//    buffer.insert(buffer.begin() + 1, -1);
-//    buffer.change_capacity(2);
+    buffer.pop_front();
+    buffer.push_front(-6);
 
-    int get_back = buffer.back();
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";
 
-    auto it_begin = buffer.begin();
-    auto it_end = buffer.end();
+    buffer.erase(buffer.begin());
+
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";
+
+    buffer.insert(buffer.begin() + 1, -1);
+
+    for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
+        std::cout << *iterator << " ";
+    }
+    std::cout << "\n";*/
+
+    buffer.change_capacity(10);
+
+//    int get_back = buffer.back();
+//
+//    auto it_begin = buffer.begin();
+//    auto it_end = buffer.end();
 
     for (auto iterator = buffer.begin(); iterator != buffer.end(); ++iterator) {
         std::cout << *iterator << " ";
     }
 
-    std::cout << "\n\n";
-    std::cout << "\n\n";
+    std::cout << "\n";
     std::fill(buffer.begin(), buffer.end(), 1);
 
     auto it = std::find(buffer.begin(), buffer.end(), 1);
