@@ -313,16 +313,15 @@ public:
     }
 
     T& front() {
-        return *(array_head_ptr[head]);
+        return *(array_head_ptr + head);
     }
 
-    // ToDO: tail
     T& back() {
-        return *(array_head_ptr[tail - 1]);
+        return *(array_head_ptr + (head + size - 1) % capacity);
     }
 
     T& at(int idx) {
-        return *(array_head_ptr[idx]);
+        return *(array_head_ptr + idx);
     }
 
     void change_capacity(unsigned new_capacity) {
@@ -389,6 +388,8 @@ int main() {
     buffer.erase(buffer.begin());
     buffer.insert(buffer.begin() + 1, -1);
     buffer.change_capacity(2);
+
+    int get_back = buffer.back();
 
 
     auto iterator1 = buffer.begin();
