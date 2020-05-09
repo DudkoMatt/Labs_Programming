@@ -110,18 +110,20 @@ public:
         }
     }
 
-    void write_to_file(FILE *file = nullptr) const {
-        if (!file) file = fopen("output.txt", "w");
+    void write_to_file(const char *file_name = "output.txt") const {
+        FILE *file = fopen(file_name, "w");
         for (int i = 0; i < 6; ++i) {
             edges[i].write_to_file(file);
         }
+        fclose(file);
     }
 
-    void read_from_file(FILE *file = nullptr) {
-        if (!file) file = fopen("input.txt", "r");
+    void read_from_file(const char *file_name = "input.txt") {
+        FILE *file = fopen(file_name, "r");
         for (int i = 0; i < 6; ++i) {
             edges[i].read_from_file(file);
         }
+        fclose(file);
     }
 
     bool is_correct() const {
@@ -168,9 +170,10 @@ private:
 int main() {
     Cube cube;
     cube.print();
+    cube.write_to_file();
     std::cout << (cube.is_correct() ? "True" : "False") << "\n";
-    cube.read_from_file();
+    cube.read_from_file("output.txt");
     std::cout << (cube.is_correct() ? "True" : "False") << "\n";
-
+    cube.print();
     return 0;
 }
