@@ -32,7 +32,7 @@
 
 class Ceil {
 public:
-    explicit Ceil(int color): color_(color) {}
+    explicit Ceil(int color) : color_(color) {}
 
     int get_color() {
         return color_;
@@ -41,6 +41,7 @@ public:
     void set_color(int color) {
         color_ = color;
     }
+
 private:
     int color_;
 };
@@ -123,14 +124,53 @@ public:
         }
     }
 
+    bool is_correct() {
+        // Цвет -> Положение(x, y)
+        std::vector<std::vector<std::vector<int>>>
+                count_colors =
+                std::vector<std::vector<std::vector<int>>>(
+                        6, std::vector<std::vector<int>>(
+                                3, std::vector<int>(
+                                        3, 0
+                                )
+                        )
+                );
+
+        for (int k = 0; k < 6; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    int curr_color = edges[k].get_ceil_color(i, j);
+                    if (curr_color < 1 || curr_color > 6)
+                        return false;
+                    count_colors[curr_color - 1][i][j] += 1;
+                }
+            }
+        }
+
+
+        for (int curr_color = 0; curr_color < 6; ++curr_color) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    if (count_colors[curr_color][i][j] != 1)
+                        return false;
+                }
+            }
+        }
+
+
+        return true;
+    }
+
 private:
     std::vector<Edge> edges;
 };
 
 int main() {
     Cube cube;
-    cube.read_from_file();
     cube.print();
-    cube.write_to_file();
+    std::cout << (cube.is_correct() ? "True" : "False") << "\n";
+    cube.read_from_file();
+    std::cout << (cube.is_correct() ? "True" : "False") << "\n";
+
     return 0;
 }
