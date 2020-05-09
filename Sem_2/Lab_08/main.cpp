@@ -66,6 +66,29 @@ public:
             }
             std::cout << "\n";
         }
+        std::cout << "\n";
+    }
+
+    void write_to_file(FILE *file) {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                fprintf(file, "%i ", matrix[i][j].get_color());
+            }
+            fprintf(file, "\n");
+        }
+        fprintf(file, "\n");
+    }
+
+    void read_from_file(FILE *file) {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                int color_;
+                fscanf(file, "%i ", &color_);
+                matrix[i][j].set_color(color_);
+            }
+            fscanf(file, "\n");
+        }
+        fscanf(file, "\n");
     }
 
 private:
@@ -75,9 +98,8 @@ private:
 class Cube {
 public:
     Cube() {
-        edges = std::vector<Edge>(6);
         for (int i = 0; i < 6; ++i) {
-            edges[i] = Edge(i + 1);
+            edges.emplace_back(i + 1);
         }
     }
 
@@ -87,11 +109,28 @@ public:
         }
     }
 
+    void write_to_file(FILE *file = nullptr) {
+        if (!file) file = fopen("output.txt", "w");
+        for (int i = 0; i < 6; ++i) {
+            edges[i].write_to_file(file);
+        }
+    }
+
+    void read_from_file(FILE *file = nullptr) {
+        if (!file) file = fopen("input.txt", "r");
+        for (int i = 0; i < 6; ++i) {
+            edges[i].read_from_file(file);
+        }
+    }
+
 private:
     std::vector<Edge> edges;
 };
 
 int main() {
-
+    Cube cube;
+    cube.read_from_file();
+    cube.print();
+    cube.write_to_file();
     return 0;
 }
