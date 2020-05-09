@@ -34,7 +34,7 @@ class Ceil {
 public:
     explicit Ceil(int color) : color_(color) {}
 
-    int get_color() {
+    int get_color() const {
         return color_;
     }
 
@@ -56,11 +56,11 @@ public:
         matrix[i][j].set_color(color);
     }
 
-    int get_ceil_color(int i, int j) {
+    int get_ceil_color(int i, int j) const {
         return matrix[i][j].get_color();
     }
 
-    void print() {
+    void print() const {
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 std::cout << matrix[i][j].get_color() << " ";
@@ -70,7 +70,7 @@ public:
         std::cout << "\n";
     }
 
-    void write_to_file(FILE *file) {
+    void write_to_file(FILE *file) const {
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 fprintf(file, "%i ", matrix[i][j].get_color());
@@ -104,13 +104,13 @@ public:
         }
     }
 
-    void print() {
+    void print() const {
         for (int i = 0; i < 6; ++i) {
             edges[i].print();
         }
     }
 
-    void write_to_file(FILE *file = nullptr) {
+    void write_to_file(FILE *file = nullptr) const {
         if (!file) file = fopen("output.txt", "w");
         for (int i = 0; i < 6; ++i) {
             edges[i].write_to_file(file);
@@ -124,7 +124,7 @@ public:
         }
     }
 
-    bool is_correct() {
+    bool is_correct() const {
         // Цвет -> Положение(x, y)
         std::vector<std::vector<std::vector<int>>>
                 count_colors =
