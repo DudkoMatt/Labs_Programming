@@ -71,6 +71,38 @@ public:
         }
         std::cout << "\n";
     }
+    
+    void rotate(bool clockwise = true) {
+        if (clockwise) {
+            // Углы
+            int tmp = get_ceil_color(0, 0);
+            set_ceil(0, 0, get_ceil_color(2, 0));
+            set_ceil(2, 0, get_ceil_color(2, 2));
+            set_ceil(2, 2, get_ceil_color(0, 2));
+            set_ceil(0, 2, tmp);
+
+            // Центры боковых линий
+            tmp = get_ceil_color(0, 1);
+            set_ceil(0, 1, get_ceil_color(1, 0));
+            set_ceil(1, 0, get_ceil_color(2, 1));
+            set_ceil(2, 1, get_ceil_color(1, 2));
+            set_ceil(1, 2, tmp);
+        } else {
+            // Углы
+            int tmp = get_ceil_color(0, 0);
+            set_ceil(0, 0, get_ceil_color(0, 2));
+            set_ceil(0, 2, get_ceil_color(2, 2));
+            set_ceil(2, 2, get_ceil_color(2, 0));
+            set_ceil(2, 0, tmp);
+
+            // Центры боковых линий
+            tmp = get_ceil_color(0, 1);
+            set_ceil(0, 1, get_ceil_color(1, 2));
+            set_ceil(1, 2, get_ceil_color(2, 1));
+            set_ceil(2, 1, get_ceil_color(1, 0));
+            set_ceil(1, 0, tmp);
+        }
+    }
 
     void write_to_file(FILE *file) const {
         for (int i = 0; i < 3; ++i) {
@@ -202,26 +234,10 @@ public:
 
     // Rotations
     void F(bool clockwise = true) {
+        // Фронтальная грань
+        edges[0].rotate(clockwise);
+
         if (clockwise) {
-            Edge &edge = edges[0];
-
-            // Фронтальная грань
-
-            // Углы
-            int tmp = edge.get_ceil_color(0, 0);
-            edge.set_ceil(0, 0, edge.get_ceil_color(2, 0));
-            edge.set_ceil(2, 0, edge.get_ceil_color(2, 2));
-            edge.set_ceil(2, 2, edge.get_ceil_color(0, 2));
-            edge.set_ceil(0, 2, tmp);
-
-            // Центры боковых линий
-            tmp = edge.get_ceil_color(0, 1);
-            edge.set_ceil(0, 1, edge.get_ceil_color(1, 0));
-            edge.set_ceil(1, 0, edge.get_ceil_color(2, 1));
-            edge.set_ceil(2, 1, edge.get_ceil_color(1, 2));
-            edge.set_ceil(1, 2, tmp);
-
-
             // Прилегающие грани
             std::vector<Ceil> tmp_v = edges[4].matrix[2];
             // 3 -> 4
@@ -245,25 +261,6 @@ public:
             }
 
         } else {
-            Edge &edge = edges[0];
-
-            // Фронтальная грань
-
-            // Углы
-            int tmp = edge.get_ceil_color(0, 0);
-            edge.set_ceil(0, 0, edge.get_ceil_color(0, 2));
-            edge.set_ceil(0, 2, edge.get_ceil_color(2, 2));
-            edge.set_ceil(2, 2, edge.get_ceil_color(2, 0));
-            edge.set_ceil(2, 0, tmp);
-
-            // Центры боковых линий
-            tmp = edge.get_ceil_color(0, 1);
-            edge.set_ceil(0, 1, edge.get_ceil_color(1, 2));
-            edge.set_ceil(1, 2, edge.get_ceil_color(2, 1));
-            edge.set_ceil(2, 1, edge.get_ceil_color(1, 0));
-            edge.set_ceil(1, 0, tmp);
-
-
             // Прилегающие грани
             std::vector<Ceil> tmp_v = edges[4].matrix[2];
             // 1 -> 4
