@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <ctime>
 
 /*
  * Лабораторная работа No8. Кубик Рубика
@@ -735,6 +736,47 @@ public:
             // tmp_v -> 3
             for (int i = 0; i < 3; ++i) {
                 edges[3].matrix[1][i] = tmp_v[i];
+            }
+        }
+    }
+
+    void shuffle() {
+        std::srand(unsigned(std::time(nullptr)));
+
+        // 1 .. 20
+        int random_length = 1 + std::rand() % 20;
+        for (int i = 0; i < random_length; ++i) {
+            int rand_int_ = std::rand();
+            bool direction = std::rand() % 2 == 0;
+            switch (rand_int_ % 9) {
+                case 0:
+                    F(direction);
+                    break;
+                case 1:
+                    R(direction);
+                    break;
+                case 2:
+                    L(direction);
+                    break;
+                case 3:
+                    B(direction);
+                    break;
+                case 4:
+                    U(direction);
+                    break;
+                case 5:
+                    D(direction);
+                    break;
+                case 6:
+                    M(direction);
+                    break;
+                case 7:
+                    S(direction);
+                    break;
+                case 8:
+                default:
+                    E(direction);
+                    break;
             }
         }
     }
