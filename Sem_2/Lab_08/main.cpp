@@ -35,6 +35,7 @@ class Ceil {
 public:
     explicit Ceil(int color) : color_(color) {}
     Ceil() {color_ = 0;}
+    Ceil(const Ceil& ceil) = default;
 
     int get_color() const {
         return color_;
@@ -55,6 +56,7 @@ public:
     explicit Edge(int color) {
         matrix = std::vector<std::vector<Ceil>>(3, std::vector<Ceil>(3, Ceil(color)));
     }
+    Edge(const Edge& edge) = default;
 
     void set_ceil(int i, int j, int color) {
         matrix[i][j].set_color(color);
@@ -150,6 +152,7 @@ public:
             edges.emplace_back(i + 1);
         }
     }
+    Cube (const Cube& cube) = default;
 
     void print_as_file() const {
         for (int i = 0; i < 6; ++i) {
@@ -852,6 +855,10 @@ public:
             }
 
         } while (x != 0);
+    }
+
+    void solve() {
+
     }
 
 private:
