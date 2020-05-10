@@ -408,10 +408,63 @@ public:
         }
     }
     void B(bool clockwise = true) {
+        edges[2].rotate(clockwise);
         if (clockwise) {
+            std::vector<Ceil> tmp_v;
+            tmp_v.resize(3);
 
+            // 4 -> tmp_v
+            for (int i = 0; i < 3; ++i) {
+                tmp_v[i] = edges[4].matrix[0][2 - i];
+            }
+
+            // 1 -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[0][2 - i] = edges[1].matrix[2 - i][2];
+            }
+
+            // 5 -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[i][2] = edges[5].matrix[2][2 - i];
+            }
+
+            // 3 -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[2][2 - i] = edges[3].matrix[2 - i][0];
+            }
+
+            // tmp_v -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[i][0] = tmp_v[i];
+            }
         } else {
+            std::vector<Ceil> tmp_v;
+            tmp_v.resize(3);
 
+            // 4 -> tmp_v
+            for (int i = 0; i < 3; ++i) {
+                tmp_v[i] = edges[4].matrix[0][2 - i];
+            }
+
+            // 3 -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[0][2 - i] = edges[3].matrix[i][0];
+            }
+
+            // 3 -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[i][0] = edges[5].matrix[2][i];
+            }
+
+            // 1 -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[2][i] = edges[1].matrix[2 - i][2];
+            }
+
+            // tmp_v -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[i][2] = tmp_v[2 - i];
+            }
         }
     }
     void U(bool clockwise = true) {
@@ -459,10 +512,10 @@ int main() {
     cube.read_from_file();
     cube.print();
     std::cout << std::endl;
-    cube.L(false);
+    cube.B(false);
     cube.print();
     std::cout << std::endl;
-    cube.L(true);
+    cube.B(true);
     cube.print();
     std::cout << std::endl;
     return 0;
