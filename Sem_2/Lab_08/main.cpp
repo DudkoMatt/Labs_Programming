@@ -689,10 +689,53 @@ public:
         }
     }
     void E(bool clockwise = true) {
+        std::vector<Ceil> tmp_v;
+        tmp_v.resize(3);
+        // 0 -> tmp_v
+        for (int i = 0; i < 3; ++i) {
+            tmp_v[i] = edges[0].matrix[1][i];
+        }
+
         if (clockwise) {
+            // 3 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[1][i] = edges[3].matrix[1][i];
+            }
 
+            // 2 -> 3
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[1][i] = edges[2].matrix[1][i];
+            }
+
+            // 1 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[1][i] = edges[1].matrix[1][i];
+            }
+
+            // tmp_v -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[1][i] = tmp_v[i];
+            }
         } else {
+            // 1 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[1][i] = edges[1].matrix[1][i];
+            }
 
+            // 2 -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[1][i] = edges[2].matrix[1][i];
+            }
+
+            // 3 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[1][i] = edges[3].matrix[1][i];
+            }
+
+            // tmp_v -> 3
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[1][i] = tmp_v[i];
+            }
         }
     }
 
@@ -705,10 +748,10 @@ int main() {
     cube.read_from_file();
     cube.print();
     std::cout << std::endl;
-    cube.S(true);
+    cube.E(true);
     cube.print();
     std::cout << std::endl;
-    cube.S(false);
+    cube.E(false);
     cube.print();
     std::cout << std::endl;
     return 0;
