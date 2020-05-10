@@ -898,6 +898,10 @@ public:
      * U' - 11
      * D' - 12
      */
+
+//#define MAX_DEPTH__ 20
+#define MAX_DEPTH__ 5
+
     bool dfs1(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves, std::set<long long> &visited) {
 //        long long curr_hash = cube.hash();
 //        if (visited.find(curr_hash) != visited.end())
@@ -905,7 +909,7 @@ public:
 //        visited.insert(curr_hash);
         if (cube.is_solved()) return true;
         if (curr_depth >= max_depth)
-            return dfs2(cube, 0, 20 - max_depth, moves, visited);
+            return dfs2(cube, 0, MAX_DEPTH__ - max_depth, moves, visited);
 
         for (int i = 1; i <= 12; ++i) {
             moves.push_back(i);
@@ -950,7 +954,7 @@ public:
             }
 
 //            visited.insert(curr_hash);
-            if (dfs2(cube, 20 - (curr_depth + 1), max_depth, moves, visited) || dfs1(cube, curr_depth + 1, max_depth, moves, visited))
+            if (dfs2(cube, MAX_DEPTH__ - (curr_depth + 1), max_depth, moves, visited) || dfs1(cube, curr_depth + 1, max_depth, moves, visited))
                 return true;
 //            visited.erase(curr_hash);
 
@@ -1018,7 +1022,7 @@ public:
 //            return false;
 //        visited.insert(curr_hash);
         if (cube.is_solved()) return true;
-        if (curr_depth == max_depth) {
+        if (curr_depth >= max_depth) {
             return cube.is_solved();
         }
 
