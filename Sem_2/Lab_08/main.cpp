@@ -130,6 +130,7 @@ public:
 
 /*
  * Нумерация граней - по номеру цвета. Исходное состояние:
+ * Смотрим с первой грани
  *
  *         | 5 5 5 |
  *         | 5 5 5 |
@@ -587,11 +588,54 @@ public:
             }
         }
     }
-    void M(bool clockwise = true) {
-        if (clockwise) {
+    void M(bool down = true) {
+        std::vector<Ceil> tmp_v;
+        tmp_v.resize(3);
 
+        for (int i = 0; i < 3; ++i) {
+            tmp_v[i] = edges[0].matrix[i][1];
+        }
+
+        if (down) {
+            // 4 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[i][1] = edges[4].matrix[i][1];
+            }
+
+            // 2 -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[i][1] = edges[2].matrix[2 - i][1];
+            }
+
+            // 5 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[2 - i][1] = edges[5].matrix[i][1];
+            }
+
+            // tmp_v -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[i][1] = tmp_v[i];
+            }
         } else {
+            // 5 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[i][1] = edges[5].matrix[i][1];
+            }
 
+            // 2 -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[i][1] = edges[2].matrix[2 - i][1];
+            }
+
+            // 4 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[2 - i][1] = edges[4].matrix[i][1];
+            }
+
+            // tmp_v -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[i][1] = tmp_v[i];
+            }
         }
     }
     void S(bool clockwise = true) {
@@ -618,10 +662,10 @@ int main() {
     cube.read_from_file();
     cube.print();
     std::cout << std::endl;
-    cube.D(false);
+    cube.M(true);
     cube.print();
     std::cout << std::endl;
-    cube.D(true);
+    cube.M(false);
     cube.print();
     std::cout << std::endl;
     return 0;
