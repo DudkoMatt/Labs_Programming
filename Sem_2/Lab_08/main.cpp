@@ -200,14 +200,121 @@ public:
         return true;
     }
 
+    // Rotations
+    void F(bool clockwise = true) {
+        if (clockwise) {
+            Edge &edge = edges[0];
+
+            // Фронтальная грань
+
+            // Углы
+            int tmp = edge.get_ceil_color(0, 0);
+            edge.set_ceil(0, 0, edge.get_ceil_color(2, 0));
+            edge.set_ceil(2, 0, edge.get_ceil_color(2, 2));
+            edge.set_ceil(2, 2, edge.get_ceil_color(0, 2));
+            edge.set_ceil(0, 2, tmp);
+
+            // Центры боковых линий
+            tmp = edge.get_ceil_color(0, 1);
+            edge.set_ceil(0, 1, edge.get_ceil_color(1, 0));
+            edge.set_ceil(1, 0, edge.get_ceil_color(2, 1));
+            edge.set_ceil(2, 1, edge.get_ceil_color(1, 2));
+            edge.set_ceil(1, 2, tmp);
+
+
+            // Прилегающие грани
+            std::vector<Ceil> tmp_v = edges[4].matrix[2];
+            // 3 -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[2][2 - i] = edges[3].matrix[i][2];
+            }
+
+            // 5 -> 3
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[i][2] = edges[5].matrix[0][i];
+            }
+
+            // 1 -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[0][i] = edges[1].matrix[2 - i][0];
+            }
+
+            // tmp_v (4) -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[i][0] = tmp_v[i];
+            }
+
+        } else {
+
+        }
+    }
+    void B(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void L(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void R(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void U(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void D(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void M(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void S(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+    void E(bool clockwise = true) {
+        if (clockwise) {
+
+        } else {
+
+        }
+    }
+
 private:
     std::vector<Edge> edges;
 };
 
 int main() {
     Cube cube;
+    cube.read_from_file();
     cube.print();
-    cube.write_to_file();
+    std::cout << "\n";
+    cube.F();
     std::cout << (cube.is_correct() ? "True" : "False") << "\n";
     cube.print();
     return 0;
