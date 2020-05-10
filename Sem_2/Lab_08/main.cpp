@@ -33,6 +33,7 @@
 class Ceil {
 public:
     explicit Ceil(int color) : color_(color) {}
+    Ceil() {color_ = 0;}
 
     int get_color() const {
         return color_;
