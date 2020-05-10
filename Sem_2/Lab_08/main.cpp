@@ -285,10 +285,65 @@ public:
             }
         }
     }
-    void B(bool clockwise = true) {
+    void R(bool clockwise = true) {
+        edges[1].rotate(clockwise);
         if (clockwise) {
+            std::vector<Ceil> tmp_v;
+            tmp_v.resize(3);
+
+            // 4 -> tmp_v
+            for (int i = 0; i < 3; ++i) {
+                tmp_v[i] = edges[4].matrix[2 - i][2];
+            }
+
+            // 0 -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[i][2] = edges[0].matrix[i][2];
+            }
+
+            // 5 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[i][2] = edges[5].matrix[i][2];
+            }
+
+            // 2 -> 5
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[i][2] = edges[2].matrix[2 - i][0];
+            }
+
+            // tmp_v -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[i][0] = tmp_v[i];
+            }
 
         } else {
+            std::vector<Ceil> tmp_v;
+            tmp_v.resize(3);
+
+            // 4 -> tmp_v
+            for (int i = 0; i < 3; ++i) {
+                tmp_v[i] = edges[4].matrix[2 - i][2];
+            }
+
+            // 2 -> 4
+            for (int i = 0; i < 3; ++i) {
+                edges[4].matrix[2 - i][2] = edges[2].matrix[i][2];
+            }
+
+            // 5 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[i][0] = edges[5].matrix[2 - i][2];
+            }
+
+            // 5 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[5].matrix[i][2] = edges[0].matrix[i][2];
+            }
+
+            // tmp_v -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[i][2] = tmp_v[2 - i];
+            }
 
         }
     }
@@ -299,7 +354,7 @@ public:
 
         }
     }
-    void R(bool clockwise = true) {
+    void B(bool clockwise = true) {
         if (clockwise) {
 
         } else {
@@ -351,10 +406,10 @@ int main() {
     cube.read_from_file();
     cube.print();
     std::cout << std::endl;
-    cube.F(false);
+    cube.R(false);
     cube.print();
     std::cout << std::endl;
-    cube.F(true);
+    cube.R(true);
     cube.print();
     std::cout << std::endl;
     return 0;
