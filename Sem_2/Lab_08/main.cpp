@@ -781,20 +781,88 @@ public:
         }
     }
 
+    void interactive_mode() {
+        int x = 1;
+        do {
+            std::cout << "Select command:" << std::endl;
+            std::cout << "1: F" << std::endl;
+            std::cout << "2: R" << std::endl;
+            std::cout << "3: L" << std::endl;
+            std::cout << "4: B" << std::endl;
+            std::cout << "5: U" << std::endl;
+            std::cout << "6: D" << std::endl;
+            std::cout << "7: M" << std::endl;
+            std::cout << "8: S" << std::endl;
+            std::cout << "9: E" << std::endl;
+            std::cout << "10: print" << std::endl;
+            std::cout << "0: exit" << std::endl << std::endl << ":";
+            std::cin >> x;
+            std::cout << std::endl;
+
+            bool dir = false;
+            if (1 <= x && x <= 9) {
+                while (true) {
+                    char y;
+                    std::cout << "Direction [True(T) / False(F)]" << std::endl << ":";
+                    std::cin >> y;
+                    if (y == 't' || y == 'T') {
+                        dir = true;
+                        break;
+                    } else if (y == 'f' || y == 'F') {
+                        dir = false;
+                        break;
+                    }
+                }
+            }
+
+            switch (x) {
+                case 1:
+                    F(dir);
+                    break;
+                case 2:
+                    R(dir);
+                    break;
+                case 3:
+                    L(dir);
+                    break;
+                case 4:
+                    B(dir);
+                    break;
+                case 5:
+                    U(dir);
+                    break;
+                case 6:
+                    D(dir);
+                    break;
+                case 7:
+                    M(dir);
+                    break;
+                case 8:
+                    S(dir);
+                    break;
+                case 9:
+                    E(dir);
+                    break;
+                case 10:
+                    print();
+                    break;
+                default:
+                    x = 0;
+                    break;
+            }
+
+        } while (x != 0);
+    }
+
 private:
     std::vector<Edge> edges;
 };
 
 int main() {
     Cube cube;
-    cube.read_from_file();
+    cube.shuffle();
     cube.print();
     std::cout << std::endl;
-    cube.E(true);
-    cube.print();
-    std::cout << std::endl;
-    cube.E(false);
-    cube.print();
-    std::cout << std::endl;
+    cube.interactive_mode();
     return 0;
 }
