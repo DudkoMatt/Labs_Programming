@@ -48,6 +48,8 @@ private:
 
 class Edge {
 public:
+    std::vector<std::vector<Ceil>> matrix;
+
     explicit Edge(int color) {
         matrix = std::vector<std::vector<Ceil>>(3, std::vector<Ceil>(3, Ceil(color)));
     }
@@ -91,9 +93,6 @@ public:
         }
         fscanf(file, "\n");
     }
-
-private:
-    std::vector<std::vector<Ceil>> matrix;
 };
 
 /*
