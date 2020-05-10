@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <set>
 #include <ctime>
 
 /*
@@ -234,6 +235,22 @@ public:
 
 
         return true;
+    }
+
+    long long hash() {
+        const int X_POWER = 3947;
+        const long long K_MOD = 20999999;
+        long long ans = 0;
+
+        for (int k = 0; k < 6; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    ans = (ans * X_POWER + (edges[k].get_ceil_color(i, j))) % K_MOD;
+                }
+            }
+        }
+
+        return (K_MOD + (ans % K_MOD)) % K_MOD;
     }
 
     // Rotations
@@ -873,15 +890,242 @@ public:
      * B - 4
      * U - 5
      * D - 6
+     *
+     * F' - 7
+     * R' - 8
+     * L' - 9
+     * B' - 10
+     * U' - 11
+     * D' - 12
      */
-    void dfs(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves) {
+    bool dfs1(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves, std::set<long long> &visited) {
+//        long long curr_hash = cube.hash();
+//        if (visited.find(curr_hash) != visited.end())
+//            return false;
+//        visited.insert(curr_hash);
+        if (cube.is_solved()) return true;
+        if (curr_depth >= max_depth)
+            return dfs2(cube, 0, 20 - max_depth, moves, visited);
 
+        for (int i = 1; i <= 12; ++i) {
+            moves.push_back(i);
+            switch (i) {
+                case 1:
+                    F(true);
+                    break;
+                case 2:
+                    R(true);
+                    break;
+                case 3:
+                    L(true);
+                    break;
+                case 4:
+                    B(true);
+                    break;
+                case 5:
+                    U(true);
+                    break;
+                case 6:
+                    D(true);
+                    break;
+                case 7:
+                    F(false);
+                    break;
+                case 8:
+                    R(false);
+                    break;
+                case 9:
+                    L(false);
+                    break;
+                case 10:
+                    B(false);
+                    break;
+                case 11:
+                    U(false);
+                    break;
+                case 12:
+                default:
+                    D(false);
+                    break;
+            }
+
+//            visited.insert(curr_hash);
+            if (dfs2(cube, 20 - (curr_depth + 1), max_depth, moves, visited) || dfs1(cube, curr_depth + 1, max_depth, moves, visited))
+                return true;
+//            visited.erase(curr_hash);
+
+            moves.pop_back();
+            switch (i) {
+                case 1:
+                    F(false);
+                    break;
+                case 2:
+                    R(false);
+                    break;
+                case 3:
+                    L(false);
+                    break;
+                case 4:
+                    B(false);
+                    break;
+                case 5:
+                    U(false);
+                    break;
+                case 6:
+                    D(false);
+                    break;
+                case 7:
+                    F(true);
+                    break;
+                case 8:
+                    R(true);
+                    break;
+                case 9:
+                    L(true);
+                    break;
+                case 10:
+                    B(true);
+                    break;
+                case 11:
+                    U(true);
+                    break;
+                case 12:
+                default:
+                    D(true);
+                    break;
+            }
+        }
+
+//        visited.erase(curr_hash);
+        return false;
+    }
+
+    /*
+     * U - 5
+     * D - 6
+     *
+     * U' - 11
+     * D' - 12
+     *
+     * F2 - 13
+     * R2 - 14
+     * L2 - 15
+     * B2 - 16
+     */
+    bool dfs2(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves, std::set<long long> &visited) {
+//        long long curr_hash = cube.hash();
+//        if (visited.find(curr_hash) != visited.end())
+//            return false;
+//        visited.insert(curr_hash);
+        if (cube.is_solved()) return true;
+        if (curr_depth == max_depth) {
+            return cube.is_solved();
+        }
+
+        for (int i = 0; i < 8; ++i) {
+            switch (i) {
+                case 0:
+                    U(true);
+                    moves.push_back(5);
+                    break;
+                case 1:
+                    D(true);
+                    moves.push_back(6);
+                    break;
+                case 2:
+                    F(true);
+                    F(true);
+                    moves.push_back(13);
+                    break;
+                case 3:
+                    R(true);
+                    R(true);
+                    moves.push_back(14);
+                    break;
+                case 4:
+                    L(true);
+                    L(true);
+                    moves.push_back(15);
+                    break;
+                case 5:
+                    D(true);
+                    D(true);
+                    moves.push_back(16);
+                    break;
+                case 6:
+                    U(false);
+                    moves.push_back(11);
+                    break;
+                case 7:
+                default:
+                    D(false);
+                    moves.push_back(12);
+                    break;
+            }
+
+//            visited.insert(curr_hash);
+            if (dfs2(cube, curr_depth + 1, max_depth, moves, visited))
+                return true;
+//            visited.erase(curr_hash);
+
+            moves.pop_back();
+            switch (i) {
+                case 0:
+                    U(false);
+                    break;
+                case 1:
+                    D(false);
+                    break;
+                case 2:
+                    F(false);
+                    F(false);
+                    break;
+                case 3:
+                    R(false);
+                    R(false);
+                    break;
+                case 4:
+                    L(false);
+                    L(false);
+                    break;
+                case 5:
+                    D(false);
+                    D(false);
+                    break;
+                case 6:
+                    U(true);
+                    break;
+                case 7:
+                default:
+                    D(true);
+                    break;
+            }
+        }
+
+//        visited.erase(curr_hash);
+        return false;
     }
 
     void solve() {
         // Max is 20 moves
-        for (int length_first = 0; length_first < 21; ++length_first) {
+        std::vector<int> moves;
+        std::set<long long> visited;
+        bool found = false;
+        for (int length_first = 0; length_first <= 10; ++length_first) {
+            moves.clear();
+            if (dfs1(*this, 0, length_first, moves, visited)) {
+                found = true;
+                break;
+            }
+        }
 
+        if (found) {
+            std::cout << "Count: " << moves.size() << std::endl;
+            for (int move : moves) {
+                std::cout << move << " ";
+            }
+        } else {
+            std::cout << "NO";
         }
     }
 
@@ -891,8 +1135,13 @@ private:
 
 int main() {
     Cube cube;
-    cube.shuffle();
-    cube.print_as_file(); std::cout << std::flush;
-    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
+//    cube.shuffle();
+//    cube.print_as_file(); std::cout << std::flush;
+//    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
+    cube.R();
+//    cube.U();
+//    cube.D();
+//    cube.L();
+    cube.solve();
     return 0;
 }
