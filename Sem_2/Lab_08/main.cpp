@@ -528,10 +528,63 @@ public:
         }
     }
     void D(bool clockwise = true) {
+        edges[5].rotate(clockwise);
         if (clockwise) {
+            std::vector<Ceil> tmp_v;
+            tmp_v.resize(3);
 
+            // 0 -> tmp_v
+            for (int i = 0; i < 3; ++i) {
+                tmp_v[i] = edges[0].matrix[2][i];
+            }
+
+            // 3 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[2][i] = edges[3].matrix[2][i];
+            }
+
+            // 2 -> 3
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[2][i] = edges[2].matrix[2][i];
+            }
+
+            // 1 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[2][i] = edges[1].matrix[2][i];
+            }
+
+            // tmp_v -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[2][i] = tmp_v[i];
+            }
         } else {
+            std::vector<Ceil> tmp_v;
+            tmp_v.resize(3);
 
+            // 0 -> tmp_v
+            for (int i = 0; i < 3; ++i) {
+                tmp_v[i] = edges[0].matrix[2][i];
+            }
+
+            // 1 -> 0
+            for (int i = 0; i < 3; ++i) {
+                edges[0].matrix[2][i] = edges[1].matrix[2][i];
+            }
+
+            // 2 -> 1
+            for (int i = 0; i < 3; ++i) {
+                edges[1].matrix[2][i] = edges[2].matrix[2][i];
+            }
+
+            // 3 -> 2
+            for (int i = 0; i < 3; ++i) {
+                edges[2].matrix[2][i] = edges[3].matrix[2][i];
+            }
+
+            // tmp_v -> 3
+            for (int i = 0; i < 3; ++i) {
+                edges[3].matrix[2][i] = tmp_v[i];
+            }
         }
     }
     void M(bool clockwise = true) {
@@ -565,10 +618,10 @@ int main() {
     cube.read_from_file();
     cube.print();
     std::cout << std::endl;
-    cube.U(false);
+    cube.D(false);
     cube.print();
     std::cout << std::endl;
-    cube.U(true);
+    cube.D(true);
     cube.print();
     std::cout << std::endl;
     return 0;
