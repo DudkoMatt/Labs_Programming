@@ -201,15 +201,12 @@ public:
         fclose(file);
     }
 
-    bool is_correct() const {
-        // Цвет -> Положение(x, y)
-        std::vector<std::vector<std::vector<int>>>
-                count_colors =
-                std::vector<std::vector<std::vector<int>>>(
-                        6, std::vector<std::vector<int>>(
-                                3, std::vector<int>(
-                                        3, 0
-                                )
+    bool is_correct() {
+        // Цвет -> Положение [Центр ребра / Угол / Центр грани] -> Число
+        std::vector<std::vector<int>> count_colors =
+                std::vector<std::vector<int>>(
+                        6, std::vector<int>(
+                                3, 0
                         )
                 );
 
@@ -219,19 +216,20 @@ public:
                     int curr_color = edges[k].get_ceil_color(i, j);
                     if (curr_color < 1 || curr_color > 6)
                         return false;
-                    count_colors[curr_color - 1][i][j] += 1;
+                    if (i == 1 && j == 1)
+                        count_colors[curr_color - 1][2] += 1;
+                    else if (i == 1 || j == 1)
+                        count_colors[curr_color - 1][0] += 1;
+                    else
+                        count_colors[curr_color - 1][1] += 1;
                 }
             }
         }
 
 
         for (int curr_color = 0; curr_color < 6; ++curr_color) {
-            for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    if (count_colors[curr_color][i][j] != 1)
-                        return false;
-                }
-            }
+            if (count_colors[curr_color][0] != 4 || count_colors[curr_color][1] != 4 || count_colors[curr_color][2] != 1)
+                return false;
         }
 
 
@@ -332,7 +330,7 @@ public:
 
             // 2 -> 4
             for (int i = 0; i < 3; ++i) {
-                edges[4].matrix[2 - i][2] = edges[2].matrix[i][2];
+                edges[4].matrix[2 - i][2] = edges[2].matrix[i][0];
             }
 
             // 5 -> 2
@@ -857,8 +855,34 @@ public:
         } while (x != 0);
     }
 
-    void solve() {
+    bool is_solved() {
+        for (int k = 0; k < 6; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    if (edges[k].matrix[i][j].get_color() != k + 1) return false;
+                }
+            }
+        }
+        return true;
+    }
 
+    /*
+     * F - 1
+     * R - 2
+     * L - 3
+     * B - 4
+     * U - 5
+     * D - 6
+     */
+    void dfs(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves) {
+
+    }
+
+    void solve() {
+        // Max is 20 moves
+        for (int length_first = 0; length_first < 21; ++length_first) {
+
+        }
     }
 
 private:
@@ -868,8 +892,7 @@ private:
 int main() {
     Cube cube;
     cube.shuffle();
-    cube.print();
-    std::cout << std::endl;
-    cube.interactive_mode();
+    cube.print_as_file(); std::cout << std::flush;
+    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
     return 0;
 }
