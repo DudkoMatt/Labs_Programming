@@ -116,9 +116,34 @@ public:
         }
     }
 
-    void print() const {
+    void print_as_file() const {
         for (int i = 0; i < 6; ++i) {
             edges[i].print();
+        }
+    }
+
+    void print() const {
+        for (int i = 0; i < 3; ++i) {
+            printf("        %i %i %i\n", edges[4].get_ceil_color(i, 0), edges[4].get_ceil_color(i, 1), edges[4].get_ceil_color(i, 2));
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j)
+                printf("%i ", edges[3].get_ceil_color(i, j));
+            printf("| ");
+            for (int j = 0; j < 3; ++j)
+                printf("%i ", edges[0].get_ceil_color(i, j));
+            printf("| ");
+            for (int j = 0; j < 3; ++j)
+                printf("%i ", edges[1].get_ceil_color(i, j));
+            printf("| ");
+            for (int j = 0; j < 3; ++j)
+                printf("%i ", edges[2].get_ceil_color(i, j));
+            printf("\n");
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            printf("        %i %i %i\n", edges[5].get_ceil_color(i, 0), edges[5].get_ceil_color(i, 1), edges[5].get_ceil_color(i, 2));
         }
     }
 
@@ -183,8 +208,6 @@ int main() {
     Cube cube;
     cube.print();
     cube.write_to_file();
-    std::cout << (cube.is_correct() ? "True" : "False") << "\n";
-    cube.read_from_file("output.txt");
     std::cout << (cube.is_correct() ? "True" : "False") << "\n";
     cube.print();
     return 0;
