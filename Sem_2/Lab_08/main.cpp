@@ -913,7 +913,7 @@ public:
                     && edges[1].matrix[0][2] == edges[5].matrix[1][1]) {
             return 3;
         } else if (edges[3].matrix[0][0] == edges[3].matrix[1][1] && edges[4].matrix[0][0] == edges[2].matrix[1][1]
-                    && edges[2].matrix[0][1] == edges[5].matrix[1][1]) {
+                    && edges[2].matrix[0][2] == edges[5].matrix[1][1]) {
             return 4;
         } else if (edges[0].matrix[0][2] == edges[0].matrix[1][1] && edges[4].matrix[2][2] == edges[1].matrix[1][1]
                     && edges[1].matrix[0][0] == edges[5].matrix[1][1]) {
