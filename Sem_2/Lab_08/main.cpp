@@ -689,6 +689,7 @@ public:
 
     void shuffle() {
         std::srand(unsigned(std::time(nullptr)));
+        moves.clear();
 
         // 1 .. 20
         int random_length = 1 + std::rand() % 20;
@@ -832,6 +833,42 @@ public:
                && (edges[3].matrix[2][1] == edges[3].matrix[1][1]);
     }
 
+    bool check_step_2() {
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                if (edges[5].matrix[i][j] != edges[5].matrix[i][j + 1])
+                    return false;
+            }
+        }
+
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                if (edges[5].matrix[i][j] != edges[5].matrix[i + 1][j])
+                    return false;
+            }
+        }
+
+        for (int k = 0; k <= 3; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                if (edges[k].matrix[2][i] != edges[k].matrix[1][1])
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool check_step_3() {
+        if (!check_step_2()) return false;
+        for (int k = 0; k <= 3; ++k) {
+            for (int i = 0; i < 2; ++i) {
+                if (edges[k].matrix[1][i] != edges[k].matrix[1][i + 1])
+                    return false;
+            }
+        }
+        return true;
+    }
+
     /*
      * F - 1
      * R - 2
@@ -973,6 +1010,42 @@ public:
             return 24;
         } else {
             return 25;
+        }
+    }
+
+    int solve_step_3_calc_case_PART_ONE() {
+        if (edges[0].matrix[1][1] == edges[0].matrix[0][1] && edges[4].matrix[2][1] == edges[3].matrix[1][1]) {
+            return 1;
+        } else if (edges[1].matrix[1][1] == edges[1].matrix[0][1] && edges[4].matrix[1][2] == edges[0].matrix[1][1]) {
+            return 2;
+        } else if (edges[2].matrix[1][1] == edges[2].matrix[0][1] && edges[4].matrix[0][1] == edges[1].matrix[1][1]) {
+            return 3;
+        } else if (edges[3].matrix[1][1] == edges[3].matrix[0][1] && edges[4].matrix[1][0] == edges[2].matrix[1][1]) {
+            return 4;
+        } else if (edges[0].matrix[1][1] == edges[0].matrix[0][1] && edges[4].matrix[2][1] == edges[1].matrix[1][1]) {
+            return 5;
+        } else if (edges[3].matrix[1][1] == edges[3].matrix[0][1] && edges[4].matrix[1][0] == edges[0].matrix[1][1]) {
+            return 6;
+        } else if (edges[2].matrix[1][1] == edges[2].matrix[0][1] && edges[4].matrix[0][1] == edges[3].matrix[1][1]) {
+            return 7;
+        } else if (edges[1].matrix[1][1] == edges[1].matrix[0][1] && edges[4].matrix[1][2] == edges[2].matrix[1][1]) {
+            return 8;
+        } else {
+            return 9;
+        }
+    }
+
+    int solve_step_3_calc_case_PART_TWO() {
+        if (edges[0].matrix[1][2] != edges[0].matrix[1][1] || edges[1].matrix[1][0] != edges[1].matrix[1][1]) {
+            return 1;
+        } else if (edges[0].matrix[1][0] != edges[0].matrix[1][1] || edges[3].matrix[1][2] != edges[3].matrix[1][1]) {
+            return 2;
+        } else if (edges[2].matrix[1][2] != edges[2].matrix[1][1] || edges[3].matrix[1][0] != edges[3].matrix[1][1]) {
+            return 3;
+        } else if (edges[2].matrix[1][0] != edges[2].matrix[1][1] || edges[1].matrix[1][2] != edges[1].matrix[1][1]) {
+            return 4;
+        } else {
+            return 5;
         }
     }
 
@@ -1259,7 +1332,155 @@ public:
     }
 
     void solve_step_3() {
+        int k = 0;
+        bool f = true;
+        while (f) {
+            k = 0;
+            while (k < 4) {
+                switch (solve_step_3_calc_case_PART_ONE()) {
+                    case 1:
+                        k = 0;
+                        U(false);
+                        L(false);
+                        U(true);
+                        L(true);
+                        U(true);
+                        F(true);
+                        U(false);
+                        F(false);
+                        break;
+                    case 2:
+                        k = 0;
+                        U(false);
+                        F(false);
+                        U(true);
+                        F(true);
+                        U(true);
+                        R(true);
+                        U(false);
+                        R(false);
+                        break;
+                    case 3:
+                        k = 0;
+                        U(false);
+                        R(false);
+                        U(true);
+                        R(true);
+                        U(true);
+                        B(true);
+                        U(false);
+                        B(false);
+                        break;
+                    case 4:
+                        k = 0;
+                        U(false);
+                        B(false);
+                        U(true);
+                        B(true);
+                        U(true);
+                        L(true);
+                        U(false);
+                        L(false);
+                        break;
+                    case 5:
+                        k = 0;
+                        U(true);
+                        R(true);
+                        U(false);
+                        R(false);
+                        U(false);
+                        F(false);
+                        U(true);
+                        F(true);
+                        break;
+                    case 6:
+                        k = 0;
+                        U(true);
+                        F(true);
+                        U(false);
+                        F(false);
+                        U(false);
+                        L(false);
+                        U(true);
+                        L(true);
+                        break;
+                    case 7:
+                        k = 0;
+                        U(true);
+                        L(true);
+                        U(false);
+                        L(false);
+                        U(false);
+                        B(false);
+                        U(true);
+                        B(true);
+                        break;
+                    case 8:
+                        k = 0;
+                        U(true);
+                        B(true);
+                        U(false);
+                        B(false);
+                        U(false);
+                        R(false);
+                        U(true);
+                        R(true);
+                        break;
+                    case 9:
+                    default:
+                        U(true);
+                        k++;
+                        break;
+                }
+            }
 
+            switch (solve_step_3_calc_case_PART_TWO()) {
+                case 1:
+                    U(true);
+                    R(true);
+                    U(false);
+                    R(false);
+                    U(false);
+                    F(false);
+                    U(true);
+                    F(true);
+                    break;
+                case 2:
+                    U(true);
+                    F(true);
+                    U(false);
+                    F(false);
+                    U(false);
+                    L(false);
+                    U(true);
+                    L(true);
+                    break;
+                case 3:
+                    U(true);
+                    L(true);
+                    U(false);
+                    L(false);
+                    U(false);
+                    B(false);
+                    U(true);
+                    B(true);
+                    break;
+                case 4:
+                    U(true);
+                    B(true);
+                    U(false);
+                    B(false);
+                    U(false);
+                    R(false);
+                    U(true);
+                    R(true);
+                    break;
+                case 5:
+                default:
+                    f = false;
+                    break;
+            }
+        }
     }
 
     void solve_step_4() {
@@ -1297,7 +1518,10 @@ private:
 int main() {
     Cube cube;
 //    cube.shuffle();
-    cube.read_from_file();
+
+//    cube.read_from_file();
+
+
 //    cube.shuffle();
 //    cube.print_as_file(); std::cout << std::flush;
     std::cout << (cube.is_solved() ? "T" : "F") << std::endl;
@@ -1307,10 +1531,17 @@ int main() {
 //    cube.D();
 //    cube.L();
 //    cube.interactive_mode();
-    cube.print(); std::cout << "\n";
+
+while (cube.check_step_3()) {
+
+    cube.shuffle();
     cube.solve_step_1();
-    cube.print(); std::cout << "\n";
+//    cube.print();
+//    std::cout << "\n";
     cube.solve_step_2();
+//    cube.print(); std::cout << "\n";
+    cube.solve_step_3();
+}
     cube.print(); std::cout << "\n";
     return 0;
 }
