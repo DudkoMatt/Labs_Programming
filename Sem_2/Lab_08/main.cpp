@@ -46,6 +46,14 @@ public:
         color_ = color;
     }
 
+    bool operator==(const Ceil& o) const {
+        return this->color_ == o.color_;
+    }
+
+    bool operator!=(const Ceil& o) const {
+        return this->color_ != o.color_;
+    }
+
 private:
     int color_;
 };
@@ -883,6 +891,24 @@ public:
         return true;
     }
 
+    bool is_cross_solved() {
+        bool a = true;
+        for (int i = 0; i < 2; ++i) {
+            if (edges[4].matrix[1][i] != edges[4].matrix[1][i + 1])
+                return false;
+        }
+        for (int i = 0; i < 2; ++i) {
+            if (edges[4].matrix[i][1] != edges[4].matrix[i + 1][1])
+                return false;
+        }
+
+        // Крест собран, проверка цветов
+        return (edges[0].matrix[0][1] == edges[0].matrix[1][1])
+               && (edges[1].matrix[0][1] == edges[1].matrix[1][1])
+               && (edges[2].matrix[0][1] == edges[2].matrix[1][1])
+               && (edges[3].matrix[0][1] == edges[3].matrix[1][1]);
+    }
+
     /*
      * F - 1
      * R - 2
@@ -900,7 +926,6 @@ public:
      */
 
 //#define MAX_DEPTH__ 20
-#define MAX_DEPTH__ 5
 
     bool dfs1(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves, std::set<long long> &visited) {
 //        long long curr_hash = cube.hash();
@@ -909,7 +934,7 @@ public:
 //        visited.insert(curr_hash);
         if (cube.is_solved()) return true;
         if (curr_depth >= max_depth)
-            return dfs2(cube, 0, MAX_DEPTH__ - max_depth, moves, visited);
+            return false; //dfs2(cube, 0, MAX_DEPTH__ - max_depth, moves, visited);
 
         for (int i = 1; i <= 12; ++i) {
             moves.push_back(i);
@@ -954,7 +979,7 @@ public:
             }
 
 //            visited.insert(curr_hash);
-            if (dfs2(cube, MAX_DEPTH__ - (curr_depth + 1), max_depth, moves, visited) || dfs1(cube, curr_depth + 1, max_depth, moves, visited))
+            if (/*dfs2(cube, MAX_DEPTH__ - (curr_depth + 1), max_depth, moves, visited) ||*/ dfs1(cube, curr_depth + 1, max_depth, moves, visited))
                 return true;
 //            visited.erase(curr_hash);
 
@@ -1139,13 +1164,15 @@ private:
 
 int main() {
     Cube cube;
+    cube.read_from_file();
 //    cube.shuffle();
 //    cube.print_as_file(); std::cout << std::flush;
-//    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
-    cube.R();
+    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
+//    cube.R();
 //    cube.U();
 //    cube.D();
 //    cube.L();
+//    cube.interactive_mode();
     cube.solve();
     return 0;
 }
