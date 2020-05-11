@@ -884,6 +884,15 @@ public:
         return true;
     }
 
+    bool check_step_5() {
+        if (!check_step_4()) return false;
+        for (int i = 0; i <= 3; ++i) {
+            if (edges[i].matrix[0][1] != edges[i].matrix[1][1])
+                return false;
+        }
+        return true;
+    }
+
     /*
      * F - 1
      * R - 2
@@ -1096,6 +1105,36 @@ public:
             return 7;
         } else {
             return 8;
+        }
+    }
+
+    int solve_step_5_calc_case_PART_ONE() {
+        if (edges[1].matrix[0][1] == edges[0].matrix[1][1]) {
+            return 1;
+        } else if (edges[3].matrix[0][1] == edges[0].matrix[1][1]) {
+            return 2;
+        } else if (edges[2].matrix[0][1] == edges[0].matrix[1][1]) {
+            return 3;
+        } else {
+            return 4;
+        }
+    }
+
+    int solve_step_5_calc_case_PART_TWO() {
+        if (edges[2].matrix[0][1] == edges[1].matrix[1][1]) {
+            return 1;
+        } else if (edges[3].matrix[0][1] == edges[1].matrix[1][1]) {
+            return 2;
+        } else {
+            return 3;
+        }
+    }
+
+    int solve_step_5_calc_case_PART_THREE() {
+        if (edges[3].matrix[0][1] == edges[2].matrix[1][1]) {
+            return 1;
+        } else {
+            return 2;
         }
     }
 
@@ -1609,7 +1648,115 @@ public:
     // Поставим боковые (не угловые!) маленькие кубики верхней грани так, чтобы цвета на
     // них соответствовали граням, к которым они примыкают
     void solve_step_5() {
+        switch (solve_step_5_calc_case_PART_ONE()) {
+            case 1:
+                U(true);
+                L(false);
+                U(); U();
+                L(true);
+                U(true);
+                L(false);
+                U(true);
+                L(true);
+                break;
+            case 2:
+                U(true);
+                B(false);
+                U(); U();
+                B(true);
+                U(true);
+                B(false);
+                U(true);
+                B(true);
+                break;
+            case 3:
+                U(true);
+                R(false);
+                U(); U();
+                R(true);
+                U(true);
+                R(false);
+                U(true);
+                R(true);
+                U(true);
+                B(false);
+                U(); U();
+                B(true);
+                U(true);
+                B(false);
+                U(true);
+                B(true);
+                U(true);
+                R(false);
+                U(); U();
+                R(true);
+                U(true);
+                R(false);
+                U(true);
+                R(true);
+                break;
+            case 4:
+            default:
+                break;
+        }
 
+        switch (solve_step_5_calc_case_PART_TWO()) {
+            case 1:
+                U(true);
+                F(false);
+                U(); U();
+                F(true);
+                U(true);
+                F(false);
+                U(true);
+                F(true);
+                break;
+            case 2:
+                U(true);
+                B(false);
+                U(); U();
+                B(true);
+                U(true);
+                B(false);
+                U(true);
+                B(true);
+                U(true);
+                L(false);
+                U(); U();
+                L(true);
+                U(true);
+                L(false);
+                U(true);
+                L(true);
+                U(true);
+                B(false);
+                U(); U();
+                B(true);
+                U(true);
+                B(false);
+                U(true);
+                B(true);
+                break;
+            case 3:
+            default:
+                break;
+        }
+
+        switch (solve_step_5_calc_case_PART_THREE()) {
+            case 1:
+                U(true);
+                R(false);
+                U(); U();
+                R(true);
+                U(true);
+                R(false);
+                U(true);
+                R(true);
+                break;
+            case 2:
+            default:
+                break;
+        }
     }
 
     void solve_step_6() {
@@ -1653,7 +1800,7 @@ int main() {
 //    cube.L();
 //    cube.interactive_mode();
 
-while (cube.check_step_4()) {
+while (cube.check_step_5()) {
 
     cube.shuffle();
     cube.solve_step_1();
@@ -1663,6 +1810,7 @@ while (cube.check_step_4()) {
 //    cube.print(); std::cout << "\n";
     cube.solve_step_3();
     cube.solve_step_4();
+    cube.solve_step_5();
 }
     cube.print(); std::cout << "\n";
     return 0;
