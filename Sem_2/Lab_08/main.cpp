@@ -1029,6 +1029,7 @@ public:
         return false;
     }
 
+    // ToDO: to delete
     /*
      * U - 5
      * D - 6
@@ -1041,6 +1042,7 @@ public:
      * L2 - 15
      * B2 - 16
      */
+    // ToDO: to delete
     bool dfs2(Cube& cube, int curr_depth, int max_depth, std::vector<int>& moves, std::set<long long> &visited) {
 //        long long curr_hash = cube.hash();
 //        if (visited.find(curr_hash) != visited.end())
@@ -1135,6 +1137,7 @@ public:
         return false;
     }
 
+    // ToDO: rewrite
     void solve() {
         // Max is 20 moves
         std::vector<int> moves;
