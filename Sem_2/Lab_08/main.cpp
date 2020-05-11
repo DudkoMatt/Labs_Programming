@@ -812,7 +812,7 @@ public:
         return true;
     }
 
-private:
+//private:
     // Проверка для нижней грани (5).
     bool is_cross_solved() {
         bool a = true;
@@ -902,107 +902,201 @@ private:
         }
     }
 
+    int solve_step_2_calc_case() {
+        if (edges[0].matrix[0][2] == edges[5].matrix[1][1] && edges[4].matrix[2][2] == edges[0].matrix[1][1]
+            && edges[1].matrix[0][0] == edges[1].matrix[1][1]) {
+            return 1;
+        } else if (edges[0].matrix[0][0] == edges[0].matrix[1][1] && edges[4].matrix[2][0] == edges[3].matrix[1][1]
+                    && edges[3].matrix[0][2] == edges[5].matrix[1][1]) {
+            return 2;
+        } else if (edges[2].matrix[0][0] == edges[2].matrix[1][1] && edges[4].matrix[0][2] == edges[1].matrix[1][1]
+                    && edges[1].matrix[0][2] == edges[5].matrix[1][1]) {
+            return 3;
+        } else if (edges[3].matrix[0][0] == edges[3].matrix[1][1] && edges[4].matrix[0][0] == edges[2].matrix[1][1]
+                    && edges[2].matrix[0][1] == edges[5].matrix[1][1]) {
+            return 4;
+        } else if (edges[0].matrix[0][2] == edges[0].matrix[1][1] && edges[4].matrix[2][2] == edges[1].matrix[1][1]
+                    && edges[1].matrix[0][0] == edges[5].matrix[1][1]) {
+            return 5;
+        } else if (edges[3].matrix[0][2] == edges[3].matrix[1][1] && edges[4].matrix[2][0] == edges[0].matrix[1][1]
+                    && edges[0].matrix[0][0] == edges[5].matrix[1][1]) {
+            return 6;
+        } else if (edges[1].matrix[0][2] == edges[1].matrix[1][1] && edges[4].matrix[0][2] == edges[2].matrix[1][1]
+                && edges[2].matrix[0][0] == edges[5].matrix[1][1]) {
+            return 7;
+        } else if (edges[2].matrix[0][2] == edges[2].matrix[1][1] && edges[4].matrix[0][0] == edges[3].matrix[1][1]
+                    && edges[3].matrix[0][0] == edges[5].matrix[1][1]) {
+            return 8;
+        } else if (    edges[0].matrix[0][2] == edges[1].matrix[1][1]
+                    && edges[4].matrix[2][2] == edges[5].matrix[1][1]
+                    && edges[1].matrix[0][0] == edges[0].matrix[1][1]) {
+            return 9;
+        } else if (    edges[3].matrix[0][2] == edges[0].matrix[1][1]
+                    && edges[4].matrix[2][0] == edges[5].matrix[1][1]
+                    && edges[0].matrix[0][0] == edges[3].matrix[1][1]) {
+            return 10;
+        } else if (    edges[1].matrix[0][2] == edges[2].matrix[1][1]
+                    && edges[4].matrix[0][2] == edges[5].matrix[1][1]
+                    && edges[2].matrix[0][0] == edges[1].matrix[1][1]) {
+            return 11;
+        } else if (    edges[2].matrix[0][2] == edges[3].matrix[1][1]
+                    && edges[4].matrix[0][0] == edges[5].matrix[1][1]
+                    && edges[3].matrix[0][0] == edges[2].matrix[1][1]) {
+            return 12;
+        } else if (edges[0].matrix[2][2] == edges[5].matrix[1][1]) {
+            return 13;
+        } else if (edges[3].matrix[2][2] == edges[5].matrix[1][1]) {
+            return 14;
+        } else if (edges[1].matrix[2][2] == edges[5].matrix[1][1]) {
+            return 15;
+        } else if (edges[2].matrix[2][2] == edges[5].matrix[1][1]) {
+            return 16;
+        } else if (edges[1].matrix[2][0] == edges[5].matrix[1][1]) {
+            return 17;
+        } else if (edges[0].matrix[2][0] == edges[5].matrix[1][1]) {
+            return 18;
+        } else if (edges[2].matrix[2][0] == edges[5].matrix[1][1]) {
+            return 19;
+        } else if (edges[3].matrix[2][0] == edges[5].matrix[1][1]) {
+            return 20;
+        } else if (edges[5].matrix[0][0] == edges[5].matrix[1][1]
+                    && (edges[0].matrix[2][0] != edges[0].matrix[1][1] || edges[3].matrix[2][2] != edges[3].matrix[1][1])) {
+            return 21;
+        } else if (edges[5].matrix[0][2] == edges[5].matrix[1][1]
+                   && (edges[0].matrix[2][2] != edges[0].matrix[1][1] || edges[1].matrix[2][0] != edges[1].matrix[1][1])) {
+            return 22;
+        } else if (edges[5].matrix[2][2] == edges[5].matrix[1][1]
+                    && (edges[1].matrix[2][2] != edges[1].matrix[1][1] || edges[2].matrix[2][0] != edges[2].matrix[1][1])) {
+            return 23;
+        } else if (edges[5].matrix[2][0] == edges[5].matrix[1][1]
+                    && (edges[2].matrix[2][2] != edges[2].matrix[1][1] || edges[3].matrix[2][0] != edges[3].matrix[1][1])) {
+            return 24;
+        } else {
+            return 25;
+        }
+    }
+
     // Цвет нижней грани (номер 5) определен. Собираем крест на нижней грани
     void solve_step_1() {
         int k = 0;
-        while (k < 4 && !is_cross_solved()) {
+        while (k < 4) {
             switch (solve_step_1_calc_case()) {
                 case 1:
+                    k = 0;
                     F(); F();
                     break;
                 case 2:
+                    k = 0;
                     R(); R();
                     break;
                 case 3:
+                    k = 0;
                     L(); L();
                     break;
                 case 4:
+                    k = 0;
                     B(); B();
                     break;
                 case 5:
+                    k = 0;
                     U(false);
                     R(false);
                     F(true);
                     R(true);
                     break;
                 case 6:
+                    k = 0;
                     U(false);
                     B(false);
                     R(true);
                     B(true);
                     break;
                 case 7:
+                    k = 0;
                     U(false);
                     F(false);
                     L(true);
                     F(true);
                     break;
                 case 8:
+                    k = 0;
                     U(false);
                     L(false);
                     B(true);
                     L(true);
                     break;
                 case 9:
+                    k = 0;
                     F(false);
                     U(false);
                     F(true);
                     break;
                 case 10:
+                    k = 0;
                     R(false);
                     U(false);
                     R(true);
                     break;
                 case 11:
+                    k = 0;
                     L(false);
                     U(false);
                     L(true);
                     break;
                 case 12:
+                    k = 0;
                     B(false);
                     U(false);
                     B(true);
                     break;
                 case 13:
+                    k = 0;
                     F(true);
                     U(false);
                     F(false);
                     break;
                 case 14:
+                    k = 0;
                     R(true);
                     U(false);
                     R(false);
                     break;
                 case 15:
+                    k = 0;
                     L(true);
                     U(false);
                     L(false);
                     break;
                 case 16:
+                    k = 0;
                     B(true);
                     U(false);
                     B(false);
                     break;
                 case 17:
                 case 21:
+                    k = 0;
                     F(); F();
                     U(false);
                     F(); F();
                     break;
                 case 18:
                 case 22:
+                    k = 0;
                     R(); R();
                     U(false);
                     R(); R();
                     break;
                 case 19:
                 case 23:
+                    k = 0;
                     L(); L();
                     U(false);
                     L(); L();
                     break;
                 case 20:
                 case 24:
+                    k = 0;
                     B(); B();
                     U(false);
                     B(); B();
@@ -1016,8 +1110,152 @@ private:
         }
     }
 
+    // Крест на нижней грани собран. Центральные элементы граней стоят на своих местах относительно центральных цветов.
+    // Собираем углы
     void solve_step_2() {
+        int k = 0;
+        while (k < 4) {
+            switch (solve_step_2_calc_case()) {
+                case 1:
+                    k = 0;
+                    F(false);
+                    U(false);
+                    F(true);
+                    break;
+                case 2:
+                    k = 0;
+                    L(false);
+                    U(false);
+                    L(true);
+                    break;
+                case 3:
+                    k = 0;
+                    R(false);
+                    U(false);
+                    R(true);
+                    break;
+                case 4:
+                    k = 0;
+                    B(false);
+                    U(false);
+                    B(true);
+                    break;
+                case 5:
+                    k = 0;
+                    R(true);
+                    U(true);
+                    R(false);
+                    break;
+                case 6:
+                    k = 0;
+                    F(true);
+                    U(true);
+                    F(false);
+                    break;
+                case 7:
+                    k = 0;
+                    B(true);
+                    U(true);
+                    B(false);
+                    break;
+                case 8:
+                    k = 0;
+                    L(true);
+                    U(true);
+                    L(false);
+                    break;
+                case 9:
+                    k = 0;
+                    R(true);
+                    U(false);
+                    R(false);
+                    U();
+                    U();
+                    R(true);
+                    U(true);
+                    R(false);
+                    break;
+                case 10:
+                    k = 0;
+                    F(true);
+                    U(false);
+                    F(false);
+                    U();
+                    U();
+                    F(true);
+                    U(true);
+                    F(false);
+                    break;
+                case 11:
+                    k = 0;
+                    B(true);
+                    U(false);
+                    B(false);
+                    U();
+                    U();
+                    B(true);
+                    U(true);
+                    B(false);
+                    break;
+                case 12:
+                    k = 0;
+                    L(true); U(false);
+                    L(false); U(); U();
+                    L(true); U(true);
+                    L(false);
+                    break;
 
+                case 17:
+                case 13:
+                    k = 0;
+                    F(false); U(false);
+                    F(true);
+                    break;
+                case 18:
+                case 14:
+                    k = 0;
+                    L(false); U(false);
+                    L(true);
+                    break;
+                case 19:
+                case 15:
+                    k = 0;
+                    R(false); U(false);
+                    R(true);
+                    break;
+                case 20:
+                case 16:
+                    k = 0;
+                    B(false); U(false);
+                    B(true);
+                    break;
+                case 21:
+                    k = 0;
+                    F(true); U(false);
+                    F(false);
+                    break;
+                case 22:
+                    k = 0;
+                    R(true); U(false);
+                    R(false);
+                    break;
+                case 23:
+                    k = 0;
+                    B(true); U(false);
+                    B(false);
+                    break;
+                case 24:
+                    k = 0;
+                    L(true); U(false);
+                    L(false);
+                    break;
+                case 25:
+                default:
+                    U(true);
+                    k++;
+                    break;
+            }
+        }
     }
 
     void solve_step_3() {
@@ -1058,15 +1296,21 @@ private:
 
 int main() {
     Cube cube;
-    cube.shuffle();
+//    cube.shuffle();
+    cube.read_from_file();
 //    cube.shuffle();
 //    cube.print_as_file(); std::cout << std::flush;
     std::cout << (cube.is_solved() ? "T" : "F") << std::endl;
+    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
 //    cube.R();
 //    cube.U();
 //    cube.D();
 //    cube.L();
 //    cube.interactive_mode();
-    cube.print();
+    cube.print(); std::cout << "\n";
+    cube.solve_step_1();
+    cube.print(); std::cout << "\n";
+    cube.solve_step_2();
+    cube.print(); std::cout << "\n";
     return 0;
 }
