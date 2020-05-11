@@ -869,6 +869,21 @@ public:
         return true;
     }
 
+    bool check_step_4() {
+        if (!check_step_3()) return false;
+        for (int i = 0; i < 2; ++i) {
+            if (edges[4].matrix[i][1] != edges[4].matrix[i + 1][1])
+                return false;
+        }
+
+        for (int i = 0; i < 2; ++i) {
+            if (edges[4].matrix[1][i] != edges[4].matrix[1][i + 1])
+                return false;
+        }
+
+        return true;
+    }
+
     /*
      * F - 1
      * R - 2
@@ -1046,6 +1061,41 @@ public:
             return 4;
         } else {
             return 5;
+        }
+    }
+
+    int solve_step_4_calc_case() {
+        if (edges[4].matrix[0][1] == edges[4].matrix[1][1] && edges[4].matrix[1][0] == edges[4].matrix[1][1]
+            && edges[0].matrix[0][1] == edges[4].matrix[1][1]
+            && edges[1].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 1;
+        } else if (edges[4].matrix[0][1] == edges[4].matrix[1][1] && edges[4].matrix[1][2] == edges[4].matrix[1][1]
+            && edges[0].matrix[0][1] == edges[4].matrix[1][1]
+            && edges[3].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 2;
+        } else if (edges[4].matrix[1][0] == edges[4].matrix[1][1] && edges[4].matrix[2][1] == edges[4].matrix[1][1]
+            && edges[2].matrix[0][1] == edges[4].matrix[1][1]
+            && edges[1].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 3;
+        } else if (edges[4].matrix[1][2] == edges[4].matrix[1][1] && edges[4].matrix[2][1] == edges[4].matrix[1][1]
+                   && edges[2].matrix[0][1] == edges[4].matrix[1][1]
+                   && edges[3].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 4;
+        } else if (edges[4].matrix[1][0] == edges[4].matrix[1][1] && edges[4].matrix[1][1] == edges[4].matrix[1][2]
+            && edges[0].matrix[0][1] == edges[4].matrix[1][1]
+            && edges[2].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 5;
+        } else if (edges[4].matrix[0][1] == edges[4].matrix[1][1] && edges[4].matrix[1][1] == edges[4].matrix[2][1]
+            && edges[1].matrix[0][1] == edges[4].matrix[1][1]
+            && edges[3].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 6;
+        } else if (edges[0].matrix[0][1] == edges[4].matrix[1][1]
+                && edges[1].matrix[0][1] == edges[4].matrix[1][1]
+                && edges[2].matrix[0][1] == edges[4].matrix[1][1]
+                && edges[3].matrix[0][1] == edges[4].matrix[1][1]) {
+            return 7;
+        } else {
+            return 8;
         }
     }
 
@@ -1331,6 +1381,7 @@ public:
         }
     }
 
+    // Собираем м нижний и средний пояса кубика
     void solve_step_3() {
         int k = 0;
         bool f = true;
@@ -1483,10 +1534,80 @@ public:
         }
     }
 
+    // Ориентируем боковые (не угловые!) маленькие кубики верхней грани так, чтобы на ней
+    // образовался крест
     void solve_step_4() {
-
+        switch (solve_step_4_calc_case()) {
+            case 1:
+                F(true);
+                U(true);
+                R(true);
+                U(false);
+                R(false);
+                F(false);
+                break;
+            case 2:
+                L(true);
+                U(true);
+                F(true);
+                U(false);
+                F(false);
+                L(false);
+                break;
+            case 3:
+                R(true);
+                U(true);
+                B(true);
+                U(false);
+                B(false);
+                R(false);
+                break;
+            case 4:
+                B(true);
+                U(true);
+                L(true);
+                U(false);
+                L(false);
+                B(false);
+                break;
+            case 5:
+                F(true);
+                R(true);
+                U(true);
+                R(false);
+                U(false);
+                F(false);
+                break;
+            case 6:
+                R(true);
+                B(true);
+                U(true);
+                B(false);
+                U(false);
+                R(false);
+                break;
+            case 7:
+                F(true);
+                U(true);
+                R(true);
+                U(false);
+                R(false);
+                F(false);
+                R(true);
+                B(true);
+                U(true);
+                B(false);
+                U(false);
+                R(false);
+                break;
+            case 8:
+            default:
+                break;
+        }
     }
 
+    // Поставим боковые (не угловые!) маленькие кубики верхней грани так, чтобы цвета на
+    // них соответствовали граням, к которым они примыкают
     void solve_step_5() {
 
     }
@@ -1532,7 +1653,7 @@ int main() {
 //    cube.L();
 //    cube.interactive_mode();
 
-while (cube.check_step_3()) {
+while (cube.check_step_4()) {
 
     cube.shuffle();
     cube.solve_step_1();
@@ -1541,6 +1662,7 @@ while (cube.check_step_3()) {
     cube.solve_step_2();
 //    cube.print(); std::cout << "\n";
     cube.solve_step_3();
+    cube.solve_step_4();
 }
     cube.print(); std::cout << "\n";
     return 0;
