@@ -58,6 +58,8 @@ public:
     }
     Cube (const Cube& cube) = default;
 
+    std::vector<int> moves;
+
     void print_as_file() const {
         for (int i = 0; i < 6; ++i) {
             edges[i].print();
@@ -157,11 +159,13 @@ public:
     }
 
     // Rotations
-    void F(bool clockwise = true) {
+    void F(bool clockwise = true, bool write_to_move = true) {
         // Фронтальная грань
         edges[0].rotate(clockwise);
 
         if (clockwise) {
+            if (write_to_move) moves.push_back(1);
+
             // Прилегающие грани
             std::vector<Ceil> tmp_v = edges[4].matrix[2];
             // 3 -> 4
@@ -185,6 +189,8 @@ public:
             }
 
         } else {
+            if (write_to_move) moves.push_back(7);
+
             // Прилегающие грани
             std::vector<Ceil> tmp_v = edges[4].matrix[2];
             // 1 -> 4
@@ -208,9 +214,11 @@ public:
             }
         }
     }
-    void R(bool clockwise = true) {
+    void R(bool clockwise = true, bool write_to_move = true) {
         edges[1].rotate(clockwise);
         if (clockwise) {
+            if (write_to_move) moves.push_back(2);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -240,6 +248,8 @@ public:
             }
 
         } else {
+            if (write_to_move) moves.push_back(8);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -270,9 +280,11 @@ public:
 
         }
     }
-    void L(bool clockwise = true) {
+    void L(bool clockwise = true, bool write_to_move = true) {
         edges[3].rotate(clockwise);
         if (clockwise) {
+            if (write_to_move) moves.push_back(3);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -301,6 +313,8 @@ public:
                 edges[0].matrix[i][0] = tmp_v[i];
             }
         } else {
+            if (write_to_move) moves.push_back(9);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -330,9 +344,11 @@ public:
             }
         }
     }
-    void B(bool clockwise = true) {
+    void B(bool clockwise = true, bool write_to_move = true) {
         edges[2].rotate(clockwise);
         if (clockwise) {
+            if (write_to_move) moves.push_back(4);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -361,6 +377,8 @@ public:
                 edges[3].matrix[i][0] = tmp_v[i];
             }
         } else {
+            if (write_to_move) moves.push_back(10);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -390,9 +408,11 @@ public:
             }
         }
     }
-    void U(bool clockwise = true) {
+    void U(bool clockwise = true, bool write_to_move = true) {
         edges[4].rotate(clockwise);
         if (clockwise) {
+            if (write_to_move) moves.push_back(5);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -421,6 +441,8 @@ public:
                 edges[1].matrix[0][2 - i] = tmp_v[i];
             }
         } else {
+            if (write_to_move) moves.push_back(11);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -450,9 +472,11 @@ public:
             }
         }
     }
-    void D(bool clockwise = true) {
+    void D(bool clockwise = true, bool write_to_move = true) {
         edges[5].rotate(clockwise);
         if (clockwise) {
+            if (write_to_move) moves.push_back(6);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -481,6 +505,8 @@ public:
                 edges[1].matrix[2][i] = tmp_v[i];
             }
         } else {
+            if (write_to_move) moves.push_back(12);
+
             std::vector<Ceil> tmp_v;
             tmp_v.resize(3);
 
@@ -671,22 +697,22 @@ public:
             bool direction = std::rand() % 2 == 0;
             switch (rand_int_ % 9) {
                 case 0:
-                    F(direction);
+                    F(direction, false);
                     break;
                 case 1:
-                    R(direction);
+                    R(direction, false);
                     break;
                 case 2:
-                    L(direction);
+                    L(direction, false);
                     break;
                 case 3:
-                    B(direction);
+                    B(direction, false);
                     break;
                 case 4:
-                    U(direction);
+                    U(direction, false);
                     break;
                 case 5:
-                    D(direction);
+                    D(direction, false);
                     break;
                 case 6:
                     M(direction);
@@ -806,9 +832,188 @@ private:
                && (edges[3].matrix[2][1] == edges[3].matrix[1][1]);
     }
 
+    /*
+     * F - 1
+     * R - 2
+     * L - 3
+     * B - 4
+     * U - 5
+     * D - 6
+     *
+     * F' - 7
+     * R' - 8
+     * L' - 9
+     * B' - 10
+     * U' - 11
+     * D' - 12
+     */
+
+    int solve_step_1_calc_case() {
+        if (edges[0].matrix[1][1] == edges[0].matrix[0][1] && edges[4].matrix[2][1] == edges[5].matrix[1][1]) {
+            return 1;
+        } else if (edges[1].matrix[1][1] == edges[1].matrix[0][1] && edges[4].matrix[1][2] == edges[5].matrix[1][1]) {
+            return 2;
+        } else if (edges[3].matrix[1][1] == edges[3].matrix[0][1] && edges[4].matrix[1][0] == edges[5].matrix[1][1]) {
+            return 3;
+        } else if (edges[2].matrix[1][1] == edges[2].matrix[0][1] && edges[4].matrix[0][1] == edges[5].matrix[1][1]) {
+            return 4;
+        } else if (edges[0].matrix[1][1] == edges[4].matrix[2][1] && edges[0].matrix[0][1] == edges[5].matrix[1][1]) {
+            return 5;
+        } else if (edges[1].matrix[1][1] == edges[4].matrix[1][2] && edges[1].matrix[0][1] == edges[5].matrix[1][1]) {
+            return 6;
+        } else if (edges[3].matrix[1][1] == edges[4].matrix[1][0] && edges[3].matrix[0][1] == edges[5].matrix[1][1]) {
+            return 7;
+        } else if (edges[2].matrix[1][1] == edges[4].matrix[0][1] && edges[2].matrix[0][1] == edges[5].matrix[1][1]) {
+            return 8;
+        } else if (edges[0].matrix[1][2] == edges[5].matrix[1][1]) {
+            return 9;
+        } else if (edges[1].matrix[1][2] == edges[5].matrix[1][1]) {
+            return 10;
+        } else if (edges[3].matrix[1][2] == edges[5].matrix[1][1]) {
+            return 11;
+        } else if (edges[2].matrix[1][2] == edges[5].matrix[1][1]) {
+            return 12;
+        } else if (edges[0].matrix[1][0] == edges[5].matrix[1][1]) {
+            return 13;
+        } else if (edges[1].matrix[1][0] == edges[5].matrix[1][1]) {
+            return 14;
+        } else if (edges[3].matrix[1][0] == edges[5].matrix[1][1]) {
+            return 15;
+        } else if (edges[2].matrix[1][0] == edges[5].matrix[1][1]) {
+            return 16;
+        } else if (edges[0].matrix[2][1] == edges[5].matrix[1][1]) {
+            return 17;
+        } else if (edges[1].matrix[2][1] == edges[5].matrix[1][1]) {
+            return 18;
+        } else if (edges[3].matrix[2][1] == edges[5].matrix[1][1]) {
+            return 19;
+        } else if (edges[2].matrix[2][1] == edges[5].matrix[1][1]) {
+            return 20;
+        } else if (edges[5].matrix[1][1] == edges[5].matrix[0][1] && edges[0].matrix[2][1] != edges[0].matrix[1][1]) {
+            return 21;
+        } else if (edges[5].matrix[1][1] == edges[5].matrix[1][2] && edges[1].matrix[2][1] != edges[1].matrix[1][1]) {
+            return 22;
+        } else if (edges[5].matrix[1][1] == edges[5].matrix[1][0] && edges[3].matrix[2][1] != edges[3].matrix[1][1]) {
+            return 23;
+        } else if (edges[5].matrix[1][1] == edges[5].matrix[2][1] && edges[2].matrix[2][1] != edges[2].matrix[1][1]) {
+            return 24;
+        } else {
+            return 25;
+        }
+    }
+
     // Цвет нижней грани (номер 5) определен. Собираем крест на нижней грани
     void solve_step_1() {
-
+        int k = 0;
+        while (k < 4 && !is_cross_solved()) {
+            switch (solve_step_1_calc_case()) {
+                case 1:
+                    F(); F();
+                    break;
+                case 2:
+                    R(); R();
+                    break;
+                case 3:
+                    L(); L();
+                    break;
+                case 4:
+                    B(); B();
+                    break;
+                case 5:
+                    U(false);
+                    R(false);
+                    F(true);
+                    R(true);
+                    break;
+                case 6:
+                    U(false);
+                    B(false);
+                    R(true);
+                    B(true);
+                    break;
+                case 7:
+                    U(false);
+                    F(false);
+                    L(true);
+                    F(true);
+                    break;
+                case 8:
+                    U(false);
+                    L(false);
+                    B(true);
+                    L(true);
+                    break;
+                case 9:
+                    F(false);
+                    U(false);
+                    F(true);
+                    break;
+                case 10:
+                    R(false);
+                    U(false);
+                    R(true);
+                    break;
+                case 11:
+                    L(false);
+                    U(false);
+                    L(true);
+                    break;
+                case 12:
+                    B(false);
+                    U(false);
+                    B(true);
+                    break;
+                case 13:
+                    F(true);
+                    U(false);
+                    F(false);
+                    break;
+                case 14:
+                    R(true);
+                    U(false);
+                    R(false);
+                    break;
+                case 15:
+                    L(true);
+                    U(false);
+                    L(false);
+                    break;
+                case 16:
+                    B(true);
+                    U(false);
+                    B(false);
+                    break;
+                case 17:
+                case 21:
+                    F(); F();
+                    U(false);
+                    F(); F();
+                    break;
+                case 18:
+                case 22:
+                    R(); R();
+                    U(false);
+                    R(); R();
+                    break;
+                case 19:
+                case 23:
+                    L(); L();
+                    U(false);
+                    L(); L();
+                    break;
+                case 20:
+                case 24:
+                    B(); B();
+                    U(false);
+                    B(); B();
+                    break;
+                case 25:
+                default:
+                    U(true);
+                    k++;
+                    break;
+            }
+        }
     }
 
     void solve_step_2() {
@@ -837,6 +1042,7 @@ private:
 
 public:
     void solve() {
+        moves = std::vector<int>();  // init
         solve_step_1();
         solve_step_2();
         solve_step_3();
@@ -846,38 +1052,21 @@ public:
         solve_step_7();
     }
 
-
-    /*
-     * F - 1
-     * R - 2
-     * L - 3
-     * B - 4
-     * U - 5
-     * D - 6
-     *
-     * F' - 7
-     * R' - 8
-     * L' - 9
-     * B' - 10
-     * U' - 11
-     * D' - 12
-     */
-
 private:
     std::vector<Edge> edges;
 };
 
 int main() {
     Cube cube;
-    cube.read_from_file();
+    cube.shuffle();
 //    cube.shuffle();
 //    cube.print_as_file(); std::cout << std::flush;
-    std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
+    std::cout << (cube.is_solved() ? "T" : "F") << std::endl;
 //    cube.R();
 //    cube.U();
 //    cube.D();
 //    cube.L();
 //    cube.interactive_mode();
-    cube.solve();
+    cube.print();
     return 0;
 }
