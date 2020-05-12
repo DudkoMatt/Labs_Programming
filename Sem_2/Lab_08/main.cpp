@@ -56,9 +56,79 @@ public:
             edges.emplace_back(i + 1);
         }
     }
-    Cube (const Cube& cube) = default;
+    Cube (const Cube& cube) {
+        edges.resize(6);
+        moves = cube.moves;
+        for (int k = 0; k < 6; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    edges[k].set_ceil(i, j, cube.get_edge(k).get_ceil_color(i, j));
+                }
+            }
+        }
+    }
 
     std::vector<int> moves;
+
+    void copy_state(const Cube& other) {
+        for (int k = 0; k < 6; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    edges[k].set_ceil(i, j, other.get_edge(k).get_ceil_color(i, j));
+                }
+            }
+        }
+    }
+
+    const Edge& get_edge(int k) const {
+        return edges[k];
+    }
+
+    void next_step_in_solution() {
+        if (moves.empty()) return;
+        switch (moves[0]) {
+            case 1:
+                F(true);
+                break;
+            case 2:
+                R(true);
+                break;
+            case 3:
+                L(true);
+                break;
+            case 4:
+                B(true);
+                break;
+            case 5:
+                U(true);
+                break;
+            case 6:
+                D(true);
+                break;
+            case 7:
+                F(false);
+                break;
+            case 8:
+                R(false);
+                break;
+            case 9:
+                L(false);
+                break;
+            case 10:
+                B(false);
+                break;
+            case 11:
+                U(false);
+                break;
+            case 12:
+                D(false);
+                break;
+            default:
+                break;
+        }
+        moves.erase(moves.begin());
+        moves.resize(moves.size() - 1);
+    }
 
     void print_as_file() const {
         for (int i = 0; i < 6; ++i) {
@@ -2178,6 +2248,7 @@ private:
 public:
     void solve() {
         moves.clear();  // init
+        Cube init_state = *this;
         solve_step_1();
         solve_step_2();
         solve_step_3();
@@ -2186,6 +2257,7 @@ public:
         solve_step_6();
         solve_step_7();
         filter_moves();
+        this->copy_state(init_state);
     }
 
 private:
@@ -2202,5 +2274,10 @@ int main() {
     cube.print_moves();
 
     cube.print(); std::cout << "\n";
+    while (!cube.moves.empty()) {
+        std::cout << cube.moves[0] << std::endl;
+        cube.print(); std::cout << std::endl << std::endl;
+        cube.next_step_in_solution();
+    }
     return 0;
 }

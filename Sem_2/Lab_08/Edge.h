@@ -13,7 +13,7 @@ class Edge {
 public:
     std::vector<std::vector<Ceil>> matrix;
 
-    explicit Edge(int color) {
+    explicit Edge(int color = 0) {
         matrix = std::vector<std::vector<Ceil>>(3, std::vector<Ceil>(3, Ceil(color)));
     }
     Edge(const Edge& edge) = default;
