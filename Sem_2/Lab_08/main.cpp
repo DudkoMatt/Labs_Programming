@@ -51,6 +51,7 @@
 class Cube {
 public:
     Cube() {
+        moves = std::vector<int>();  // init
         for (int i = 0; i < 6; ++i) {
             edges.emplace_back(i + 1);
         }
@@ -821,6 +822,91 @@ public:
                 }
             }
         }
+    }
+
+    /*
+     * F - 1
+     * R - 2
+     * L - 3
+     * B - 4
+     * U - 5
+     * D - 6
+     *
+     * F' - 7
+     * R' - 8
+     * L' - 9
+     * B' - 10
+     * U' - 11
+     * D' - 12
+     */
+    void print_moves() {
+        for (const int i: moves) {
+            switch (i) {
+                case 1:
+                    std::cout << "F";
+                    break;
+                case 2:
+                    std::cout << "R";
+                    break;
+                case 3:
+                    std::cout << "L";
+                    break;
+                case 4:
+                    std::cout << "B";
+                    break;
+                case 5:
+                    std::cout << "U";
+                    break;
+                case 6:
+                    std::cout << "D";
+                    break;
+                case 7:
+                    std::cout << "F'";
+                    break;
+                case 8:
+                    std::cout << "R'";
+                    break;
+                case 9:
+                    std::cout << "L'";
+                    break;
+                case 10:
+                    std::cout << "B'";
+                    break;
+                case 11:
+                    std::cout << "U'";
+                    break;
+                case 12:
+                    std::cout << "D'";
+                    break;
+                default:
+                    break;
+            }
+            std::cout << " ";
+        }
+        std::cout << std::endl;
+    }
+
+private:
+    void filter_moves() {
+        std::vector<int> new_moves;
+        int k = 1;
+        for (int i = 1; i < moves.size(); ++i) {
+            if (moves[i - 1] != moves[i]) {
+                for (int j = 0; j < k; ++j) {
+                    new_moves.push_back(moves[i - 1]);
+                }
+                k = 1;
+            } else {
+                k = (k + 1) % 4;
+            }
+        }
+
+        for (int j = 0; j < k; ++j) {
+            new_moves.push_back(moves[moves.size() - 1]);
+        }
+
+        moves.clear();
+        moves = new_moves;
     }
 
 private:
@@ -2091,7 +2177,7 @@ private:
 
 public:
     void solve() {
-        moves = std::vector<int>();  // init
+        moves.clear();  // init
         solve_step_1();
         solve_step_2();
         solve_step_3();
@@ -2099,6 +2185,7 @@ public:
         solve_step_5();
         solve_step_6();
         solve_step_7();
+        filter_moves();
     }
 
 private:
@@ -2108,19 +2195,12 @@ private:
 int main() {
     Cube cube;
 //    cube.shuffle();
-//    cube.read_from_file();
-
-//    cube.shuffle();
-//    cube.print_as_file(); std::cout << std::flush;
-    std::cout << (cube.is_solved() ? "T" : "F") << std::endl;
+    cube.read_from_file();
     std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
-//    cube.interactive_mode();
 
-// Test multiple times that solve is working correctly
-while (cube.is_solved()) {
-    cube.shuffle();
     cube.solve();
-}
+    cube.print_moves();
+
     cube.print(); std::cout << "\n";
     return 0;
 }
