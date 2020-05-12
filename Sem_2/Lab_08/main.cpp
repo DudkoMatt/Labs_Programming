@@ -813,7 +813,7 @@ public:
         return true;
     }
 
-//private:
+private:
     // Проверка для нижней грани (5).
     bool is_cross_solved() {
         bool a = true;
@@ -2113,15 +2113,8 @@ int main() {
 //    cube.interactive_mode();
 
 while (cube.is_solved()) {
-
     cube.shuffle();
-    cube.solve_step_1();
-    cube.solve_step_2();
-    cube.solve_step_3();
-    cube.solve_step_4();
-    cube.solve_step_5();
-    cube.solve_step_6();
-    cube.solve_step_7();
+    cube.solve();
 }
     cube.print(); std::cout << "\n";
     return 0;
