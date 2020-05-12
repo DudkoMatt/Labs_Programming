@@ -813,6 +813,17 @@ public:
         return true;
     }
 
+    void clear_to_init_state() {
+        moves.clear();
+        for (int k = 0; k < 6; ++k) {
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    edges[k].set_ceil(i, k, k);
+                }
+            }
+        }
+    }
+
 private:
     // Проверка для нижней грани (5).
     bool is_cross_solved() {
@@ -2098,20 +2109,15 @@ private:
 int main() {
     Cube cube;
 //    cube.shuffle();
-
 //    cube.read_from_file();
-
 
 //    cube.shuffle();
 //    cube.print_as_file(); std::cout << std::flush;
     std::cout << (cube.is_solved() ? "T" : "F") << std::endl;
     std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
-//    cube.R();
-//    cube.U();
-//    cube.D();
-//    cube.L();
 //    cube.interactive_mode();
 
+// Test multiple times that solve is working correctly
 while (cube.is_solved()) {
     cube.shuffle();
     cube.solve();
