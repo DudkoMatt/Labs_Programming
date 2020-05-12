@@ -1138,6 +1138,163 @@ public:
         }
     }
 
+    int solve_step_6_calc_case_PART_ONE() {
+        if (
+                (edges[0].matrix[0][0] == edges[0].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[1].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[4].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[0].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[4].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[1].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[1].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[0].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[4].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[1].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[4].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[0].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[4].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[1].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[0].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[4].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[0].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[1].matrix[1][1])
+        ) {
+            return 1;
+        } else if (
+
+                (edges[1].matrix[0][2] == edges[0].matrix[1][1] &&
+                 edges[2].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[0][2] == edges[4].matrix[1][1]) ||
+
+                (edges[1].matrix[0][2] == edges[0].matrix[1][1] &&
+                 edges[2].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[0][2] == edges[1].matrix[1][1]) ||
+
+                (edges[1].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[2].matrix[0][0] == edges[0].matrix[1][1] &&
+                 edges[4].matrix[0][2] == edges[4].matrix[1][1]) ||
+
+                (edges[1].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[2].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[0][2] == edges[0].matrix[1][1]) ||
+
+                (edges[1].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[2].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[0][2] == edges[0].matrix[1][1]) ||
+
+                (edges[1].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[2].matrix[0][0] == edges[0].matrix[1][1] &&
+                 edges[4].matrix[0][2] == edges[1].matrix[1][1])
+
+                ) {
+            return 2;
+        } else if (
+
+                (edges[2].matrix[0][2] == edges[0].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[4].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[0].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[1].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[0].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[4].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[0].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[0].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[0].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[1].matrix[1][1])
+
+                ) {
+            return 3;
+        } else {
+            return 4;
+        }
+    }
+
+    int solve_step_6_calc_case_PART_TWO() {
+        if (
+               (edges[0].matrix[0][0] == edges[1].matrix[1][1] &&
+                edges[3].matrix[0][2] == edges[2].matrix[1][1] &&
+                edges[4].matrix[2][0] == edges[4].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[3].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[2][0] == edges[2].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[2].matrix[1][1] &&
+                 edges[3].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[2][0] == edges[4].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[2].matrix[1][1] &&
+                 edges[3].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[2][0] == edges[1].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[3].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[2][0] == edges[2].matrix[1][1]) ||
+
+                (edges[0].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[3].matrix[0][2] == edges[2].matrix[1][1] &&
+                 edges[4].matrix[2][0] == edges[1].matrix[1][1])
+            ) {
+            return 1;
+        } else if (
+
+                (edges[2].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[2].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[4].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[1].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[2].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[2].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[4].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[2].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[4].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[1].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[1].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[2].matrix[1][1]) ||
+
+                (edges[2].matrix[0][2] == edges[4].matrix[1][1] &&
+                 edges[3].matrix[0][0] == edges[2].matrix[1][1] &&
+                 edges[4].matrix[0][0] == edges[1].matrix[1][1])
+
+                ) {
+            return 2;
+        } else {
+            return 3;
+        }
+    }
+
+    int solve_step_7_calc_case() {
+        if (edges[1].matrix[0][0] == edges[4].matrix[1][1])
+            return 1;
+        else if (edges[0].matrix[0][2] == edges[4].matrix[1][1])
+            return 2;
+        else
+            return 3;
+    }
+
     // Цвет нижней грани (номер 5) определен. Собираем крест на нижней грани
     void solve_step_1() {
         int k = 0;
@@ -1759,12 +1916,171 @@ public:
         }
     }
 
+    // Разместим угловые маленькие кубики верхней грани так, чтобы цвета на них соответствовали
+    // цветам граней, к которым они примыкают
     void solve_step_6() {
+        int k = 0;
+        while (k != 4)
+            switch (solve_step_6_calc_case_PART_ONE()) {
+                case 1:
+                    F(false);
+                    L(false);
+                    F(true);
+                    R(false);
+                    F(false);
+                    L(true);
+                    F(true);
+                    R(true);
+                    break;
+                case 2:
+                    R(false);
+                    F(false);
+                    L(false);
+                    F(true);
+                    R(true);
+                    F(false);
+                    L(true);
+                    F(true);
+                    break;
+                case 3:
+                    F(false);
+                    L(false);
+                    B(false);
+                    L(true);
+                    F(true);
+                    L(false);
+                    B(true);
+                    L(true);
+                    break;
+                case 4:
+                default:
+                    k = 4;
+                    break;
+            }
 
+        k = 0;
+        while (k != 3)
+            switch (solve_step_6_calc_case_PART_TWO()) {
+                case 1:
+                    B(false);
+                    R(false);
+                    B(true);
+                    L(false);
+                    B(false);
+                    R(true);
+                    B(true);
+                    L(true);
+                    break;
+                case 2:
+                    L(false);
+                    B(false);
+                    R(false);
+                    B(true);
+                    L(true);
+                    B(false);
+                    R(true);
+                    B(true);
+                    break;
+                case 3:
+                default:
+                    k = 3;
+                    break;
+            }
     }
 
     void solve_step_7() {
+        switch (solve_step_7_calc_case()) {
+            case 1:
+                F(false);
+                R(true);
+                F(true);
+                R(false);
+                F(false);
+                R(true);
+                F(true);
+                R(false);
+                break;
+            case 2:
+                R(true);
+                F(false);
+                R(false);
+                F(true);
+                R(true);
+                F(false);
+                R(false);
+                F(true);
+                break;
+            case 3:
+            default:
+                U(true);
+                break;
+        }
 
+        for (int i = 0; i < 3; ++i) {
+            switch (solve_step_7_calc_case()) {
+                case 1:
+                    F(false);
+                    R(true);
+                    F(true);
+                    R(false);
+                    F(false);
+                    R(true);
+                    F(true);
+                    R(false);
+
+                    U(true);
+
+                    break;
+                case 2:
+                    R(true);
+                    F(false);
+                    R(false);
+                    F(true);
+                    R(true);
+                    F(false);
+                    R(false);
+                    F(true);
+
+                    U(true);
+
+                    break;
+                case 3:
+                default:
+                    break;
+            }
+        }
+
+        switch (solve_step_7_calc_case()) {
+            case 1:
+                F(false);
+                R(true);
+                F(true);
+                R(false);
+                F(false);
+                R(true);
+                F(true);
+                R(false);
+                break;
+            case 2:
+                R(true);
+                F(false);
+                R(false);
+                F(true);
+                R(true);
+                F(false);
+                R(false);
+                F(true);
+                break;
+            case 3:
+            default:
+                break;
+        }
+
+        int k = 0;
+        while (!is_solved() && k < 4) {
+            U(true);
+            k++;
+        }
     }
 
 public:
@@ -1787,7 +2103,7 @@ int main() {
     Cube cube;
 //    cube.shuffle();
 
-//    cube.read_from_file();
+    cube.read_from_file();
 
 
 //    cube.shuffle();
@@ -1800,18 +2116,21 @@ int main() {
 //    cube.L();
 //    cube.interactive_mode();
 
-while (cube.check_step_5()) {
+//while (cube.check_step_5()) {
 
-    cube.shuffle();
-    cube.solve_step_1();
-//    cube.print();
-//    std::cout << "\n";
-    cube.solve_step_2();
-//    cube.print(); std::cout << "\n";
-    cube.solve_step_3();
-    cube.solve_step_4();
-    cube.solve_step_5();
-}
+//    cube.shuffle();
+//    cube.solve_step_1();
+////    cube.print();
+////    std::cout << "\n";
+//    cube.solve_step_2();
+////    cube.print(); std::cout << "\n";
+//    cube.solve_step_3();
+//    cube.solve_step_4();
+//    cube.solve_step_5();
+    cube.print(); std::cout << "\n" << std::flush;
+    cube.solve_step_6();
+//    cube.solve_step_7();
+//}
     cube.print(); std::cout << "\n";
     return 0;
 }
