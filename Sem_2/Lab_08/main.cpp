@@ -806,7 +806,7 @@ public:
         for (int k = 0; k < 6; ++k) {
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
-                    if (edges[k].matrix[i][j].get_color() != k + 1) return false;
+                    if (edges[k].matrix[i][j] != edges[k].matrix[1][1]) return false;
                 }
             }
         }
@@ -1988,6 +1988,7 @@ public:
             }
     }
 
+    // Финальный этап: поворот углов на верхней грани
     void solve_step_7() {
         switch (solve_step_7_calc_case()) {
             case 1:
@@ -2027,9 +2028,6 @@ public:
                     R(true);
                     F(true);
                     R(false);
-
-                    U(true);
-
                     break;
                 case 2:
                     R(true);
@@ -2040,14 +2038,12 @@ public:
                     F(false);
                     R(false);
                     F(true);
-
-                    U(true);
-
                     break;
                 case 3:
                 default:
                     break;
             }
+            U(true);
         }
 
         switch (solve_step_7_calc_case()) {
@@ -2103,7 +2099,7 @@ int main() {
     Cube cube;
 //    cube.shuffle();
 
-    cube.read_from_file();
+//    cube.read_from_file();
 
 
 //    cube.shuffle();
@@ -2116,21 +2112,17 @@ int main() {
 //    cube.L();
 //    cube.interactive_mode();
 
-//while (cube.check_step_5()) {
+while (cube.is_solved()) {
 
-//    cube.shuffle();
-//    cube.solve_step_1();
-////    cube.print();
-////    std::cout << "\n";
-//    cube.solve_step_2();
-////    cube.print(); std::cout << "\n";
-//    cube.solve_step_3();
-//    cube.solve_step_4();
-//    cube.solve_step_5();
-    cube.print(); std::cout << "\n" << std::flush;
+    cube.shuffle();
+    cube.solve_step_1();
+    cube.solve_step_2();
+    cube.solve_step_3();
+    cube.solve_step_4();
+    cube.solve_step_5();
     cube.solve_step_6();
-//    cube.solve_step_7();
-//}
+    cube.solve_step_7();
+}
     cube.print(); std::cout << "\n";
     return 0;
 }
