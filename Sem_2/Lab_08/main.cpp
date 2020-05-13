@@ -69,6 +69,7 @@ public:
     }
 
     std::vector<int> moves;
+    std::vector<int> shuffle_moves;
 
     void copy_state(const Cube& other) {
         for (int k = 0; k < 6; ++k) {
@@ -760,6 +761,7 @@ public:
     void shuffle() {
         std::srand(unsigned(std::time(nullptr)));
         moves.clear();
+        shuffle_moves.clear();
 
         // 1 .. 20
         int random_length = 1 + std::rand() % 20;
@@ -796,6 +798,7 @@ public:
                     E(direction);
                     break;
             }
+            shuffle_moves.push_back((direction ? 1 : 0) * 9 + rand_int_ % 9);
         }
     }
 
@@ -885,6 +888,7 @@ public:
 
     void clear_to_init_state() {
         moves.clear();
+        shuffle_moves.clear();
         for (int k = 0; k < 6; ++k) {
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < 3; ++j) {
@@ -2264,8 +2268,13 @@ private:
     std::vector<Edge> edges;
 };
 
+#ifndef GLUT_PROGRAM
+
 int main() {
     Cube cube;
+
+    cube.interactive_mode();
+
 //    cube.shuffle();
     cube.read_from_file();
     std::cout << (cube.is_correct() ? "T" : "F") << std::endl;
@@ -2281,3 +2290,5 @@ int main() {
     }
     return 0;
 }
+
+#endif
