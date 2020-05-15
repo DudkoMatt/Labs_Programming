@@ -37,6 +37,8 @@ Home, End - приближение/отдаление
 #define GLUT_PROGRAM
 #include "../Sem_2/Lab_08/main.cpp"
 #include <queue>
+
+#define ANGLE_ROT 30
 Cube cube{};
 
 std::queue<int> queue_of_rotations;
@@ -177,7 +179,7 @@ void keys(unsigned char key, int, int)
     // если нажали клавишу от 0 до 5 - начинаем поворот на 3 градуса
     if (cube_3d.current == -1 && key >= '0' && key < '6')
     {
-        cube_3d.Rotate(key - '0', 3);
+        cube_3d.Rotate(key - '0', ANGLE_ROT);
 
         switch (key - '0') {
             case 0:
@@ -236,22 +238,22 @@ void timer(int)
                 queue_of_rotations.pop();
                 switch (q) {
                     case 0:
-                        cube_3d.Rotate(1, 3);
+                        cube_3d.Rotate(1, ANGLE_ROT);
                         break;
                     case 1:
-                        cube_3d.Rotate(5, 3);
+                        cube_3d.Rotate(5, ANGLE_ROT);
                         break;
                     case 2:
-                        cube_3d.Rotate(4, 3);
+                        cube_3d.Rotate(4, ANGLE_ROT);
                         break;
                     case 3:
-                        cube_3d.Rotate(0, 3);
+                        cube_3d.Rotate(0, ANGLE_ROT);
                         break;
                     case 4:
-                        cube_3d.Rotate(3, 3);
+                        cube_3d.Rotate(3, ANGLE_ROT);
                         break;
                     case 5:
-                        cube_3d.Rotate(2, 3);
+                        cube_3d.Rotate(2, ANGLE_ROT);
                         break;
                     default:
                         break;
@@ -259,12 +261,12 @@ void timer(int)
             }
         }
         else
-            cube_3d.Rotate(cube_3d.current, 3);
+            cube_3d.Rotate(cube_3d.current, ANGLE_ROT);
     }
     else
     {
         if (cube_3d.current != -1)
-            cube_3d.Rotate(cube_3d.current, 3);
+            cube_3d.Rotate(cube_3d.current, ANGLE_ROT);
     }
     
     display();
